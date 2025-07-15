@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Frontend service
+  frontend:
+    build:
+      context: .
+      target: frontend-build
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_SQUARE_APPLICATION_ID=${REACT_APP_SQUARE_APPLICATION_ID}
+      - REACT_APP_SQUARE_ACCESS_TOKEN=${REACT_APP_SQUARE_ACCESS_TOKEN}
+      - REACT_APP_SQUARE_ENVIRONMENT=${REACT_APP_SQUARE_ENVIRONMENT:-production}
+      - REACT_APP_BACKEND_URL=http://localhost:3001/api/square
+    depends_on:
+      - backend
+    networks:
+      - fettermans-network
+
+  # Backend service
+  backend:
+    build:
+      context: .
+      target: production
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - REACT_APP_SQUARE_APPLICATION_ID=${REACT_APP_SQUARE_APPLICATION_ID}
+      - REACT_APP_SQUARE_ACCESS_TOKEN=${REACT_APP_SQUARE_ACCESS_TOKEN}
+      - REACT_APP_SQUARE_ENVIRONMENT=${REACT_APP_SQUARE_ENVIRONMENT:-production}
+      - ALLOWED_ORIGINS=http://localhost:3000
+    healthcheck:
+      test: ["CMD", "node", "server/healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - fettermans-network
+
+  # Nginx reverse proxy (optional)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # Mount SSL certificates if available
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - fettermans-network
+    restart: unless-stopped
+
+networks:
+  fettermans-network:
+    driver: bridge
+
+volumes:
+  ssl-certs:
+    driver: local

@@ -59,8 +59,8 @@ export class SquareService {
     this.locationId = process.env.REACT_APP_SQUARE_LOCATION_ID || '';
     this.environment = process.env.REACT_APP_SQUARE_ENVIRONMENT || 'sandbox';
     // Use backend proxy instead of direct Square API calls
-    this.baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
-    // Append /square to the base URL for Square-specific endpoints
+    this.baseUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001/api/square';
+    // Remove /square suffix if it exists since REACT_APP_BACKEND_URL already includes it
     this.baseUrl = this.baseUrl.endsWith('/square') ? this.baseUrl : `${this.baseUrl}/square`;
   }
 
