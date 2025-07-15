@@ -1,0 +1,384 @@
+import React, { useState } from 'react';
+import { X, Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Product, ProductVariant } from '../../types';
+import { useCart } from '../../contexts/CartContext';
+
+import toast from 'react-hot-toast';
+
+interface ProductDetailModalProps {
+  product: Product;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+interface SelectedOptions {
+  selectedVariants: { [variantId: string]: string | string[]; };
+  quantity: number;
+  customerNote: string;
+}
+
+interface ExpandableTextProps {
+  text: string;
+  maxLength?: number;
+  className?: string;
+}
+
+const ExpandableText: React.FC<ExpandableTextProps> = ({ text, maxLength = 150, className = '' }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  if (text.length <= maxLength) {
+    return <p className={className}>{text}</p>;
+  }
+  
+  return (
+    <div>
+      <p className={className}>
+        {isExpanded ? text : `${text.substring(0, maxLength)}...`}
+      </p>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="mt-2 text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 transition-colors"
+      >
+        {isExpanded ? (
+          <>
+            Show less <ChevronUp className="w-4 h-4" />
+          </>
+        ) : (
+          <>
+            See more <ChevronDown className="w-4 h-4" />
+          </>
+        )}
+      </button>
+    </div>
+  );
+};
+
+const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen, onClose }) => {
+  const { addToCart } = useCart();
+  const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({
+    selectedVariants: {},
+    quantity: 1,
+    customerNote: ''
+  });
+
+  if (!isOpen) return null;
+
+  const handleVariantChange = (variantId: string, optionValue: string, isMultiple: boolean = false) => {
+    setSelectedOptions(prev => {
+      if (isMultiple) {
+        const currentValues = (prev.selectedVariants[variantId] as string[]) || [];
+        const exists = currentValues.includes(optionValue);
+        if (exists) {
+          return {
+            ...prev,
+            selectedVariants: {
+              ...prev.selectedVariants,
+              [variantId]: currentValues.filter(v => v !== optionValue)
+            }
+          };
+        } else {
+          return {
+            ...prev,
+            selectedVariants: {
+              ...prev.selectedVariants,
+              [variantId]: [...currentValues, optionValue]
+            }
+          };
+        }
+      } else {
+        return {
+          ...prev,
+          selectedVariants: {
+            ...prev.selectedVariants,
+            [variantId]: optionValue
+          }
+        };
+      }
+    });
+  };
+
+
+
+  const calculateTotalPrice = () => {
+    let total = product.price;
+    
+    // Add variant option prices
+    if (product.variants) {
+      product.variants.forEach(variant => {
+        const selectedValue = selectedOptions.selectedVariants[variant.id];
+        if (selectedValue) {
+          if (Array.isArray(selectedValue)) {
+            // Multiple selection (checklist)
+            selectedValue.forEach(optionValue => {
+              const option = variant.options.find(opt => opt.name === optionValue);
+              if (option && option.price) {
+                total += option.price;
+              }
+            });
+          } else {
+            // Single selection (dropdown)
+            const option = variant.options.find(opt => opt.name === selectedValue);
+            if (option && option.price) {
+              total += option.price;
+            }
+          }
+        }
+      });
+    }
+    
+    return total * selectedOptions.quantity;
+  };
+
+  const handleAddToCart = () => {
+    // Create special instructions from selections
+    const instructions = [];
+    
+    // Add variant selections to instructions
+    if (product.variants) {
+      product.variants.forEach(variant => {
+        const selectedValue = selectedOptions.selectedVariants[variant.id];
+        if (selectedValue) {
+          if (Array.isArray(selectedValue) && selectedValue.length > 0) {
+            const selectedLabels = selectedValue.map(optionValue => {
+              const option = variant.options.find(opt => opt.name === optionValue);
+              return option?.name;
+            }).filter(Boolean);
+            if (selectedLabels.length > 0) {
+              instructions.push(`${variant.name}: ${selectedLabels.join(', ')}`);
+            }
+          } else if (typeof selectedValue === 'string') {
+            const option = variant.options.find(opt => opt.name === selectedValue);
+            if (option) {
+              instructions.push(`${variant.name}: ${option.name}`);
+            }
+          }
+        }
+      });
+    }
+    
+    if (selectedOptions.customerNote) {
+      instructions.push(`Note: ${selectedOptions.customerNote}`);
+    }
+    
+    addToCart(
+      product,
+      selectedOptions.quantity,
+      {
+        selectedVariants: selectedOptions.selectedVariants
+      },
+      instructions.join(' | ')
+    );
+    
+    toast.success(`${product.name} added to cart!`);
+    onClose();
+  };
+
+
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+      {/* Reduced max width from lg:max-w-2xl to lg:max-w-lg for more compact desktop view */}
+      <div className="bg-white rounded-lg sm:rounded-xl w-full max-w-lg sm:max-w-xl lg:max-w-lg max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl">
+        {/* Header - Reduced padding and font sizes */}
+        <div className="p-3 sm:p-4 lg:p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <div className="flex justify-between items-start">
+            <div className="flex-1 pr-4">
+              {/* Reduced header font size from lg:text-3xl to lg:text-2xl */}
+              <h2 className="text-xl sm:text-2xl lg:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 leading-tight">{product.name}</h2>
+              <div className="flex items-center">
+                {/* Reduced price font size */}
+                <span className="text-xl sm:text-2xl lg:text-2xl font-bold text-green-600">
+                  ${product.price.toFixed(2)}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              aria-label="Close product details"
+              className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full flex-shrink-0"
+            >
+              <X className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+
+        {/* Content - Reduced padding and spacing */}
+        <div className="p-3 sm:p-4 lg:p-5 space-y-3 sm:space-y-4 lg:space-y-4">
+          {/* Product Description */}
+          {product.description && (
+            <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+              {/* Reduced heading font size */}
+              <h3 className="text-sm sm:text-base lg:text-base font-semibold text-gray-900 mb-2">Description:</h3>
+              <ExpandableText 
+                text={product.description} 
+                maxLength={120}
+                className="text-gray-700 leading-relaxed text-sm"
+              />
+            </div>
+          )}
+
+          {/* Ingredients */}
+          {product.ingredients && product.ingredients.length > 0 && (
+            <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+              <h3 className="text-sm sm:text-base lg:text-base font-semibold text-gray-900 mb-2">Ingredients:</h3>
+              <ExpandableText 
+                text={product.ingredients.join(', ')} 
+                maxLength={100}
+                className="text-gray-700 leading-relaxed text-sm"
+              />
+            </div>
+          )}
+
+          {/* Allergens */}
+          {product.allergens && product.allergens.length > 0 && (
+            <div className="bg-red-50 border border-red-200 p-3 sm:p-4 rounded-lg">
+              <h3 className="text-sm sm:text-base lg:text-base font-semibold text-red-800 mb-2">⚠️ Allergen Information:</h3>
+              <p className="text-red-700 leading-relaxed text-sm">{product.allergens.join(', ')}</p>
+            </div>
+          )}
+
+          {/* Nutritional Information */}
+          {product.nutritionalInfo && Object.keys(product.nutritionalInfo).length > 0 && (
+            <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+              <h3 className="text-sm sm:text-base lg:text-base font-semibold text-blue-900 mb-2">Nutritional Information:</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {Object.entries(product.nutritionalInfo).map(([key, value]) => (
+                  <div key={key} className="flex justify-between text-sm">
+                    <span className="text-blue-700 capitalize">{key.replace(/_/g, ' ')}:</span>
+                    <span className="text-blue-800 font-medium">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Preparation Time */}
+          {product.preparationTime && (
+            <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg">
+              <h3 className="text-sm sm:text-base lg:text-base font-semibold text-yellow-900 mb-2">⏱️ Preparation Time:</h3>
+              <p className="text-yellow-800 font-medium text-sm">{product.preparationTime} minutes</p>
+            </div>
+          )}
+
+          {/* Product Variants - Reduced spacing and font sizes */}
+          {product.variants?.map((variant: ProductVariant) => (
+            <div key={variant.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                  {variant.name}
+                </h3>
+                <span className="text-xs text-gray-700 bg-gray-200 px-2 py-1 rounded-full font-medium">
+                  Optional
+                </span>
+              </div>
+              
+              {variant.type === 'dropdown' ? (
+                <div className="relative">
+                  <label htmlFor={`variant-${variant.id}`} className="sr-only">
+                    {variant.name} selection
+                  </label>
+                  <select
+                    id={`variant-${variant.id}`}
+                    value={selectedOptions.selectedVariants[variant.id] || ''}
+                    onChange={(e) => handleVariantChange(variant.id, e.target.value, false)}
+                    className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none cursor-pointer text-sm"
+                  >
+                    <option value="">Select an option</option>
+                    {variant.options.map((option) => (
+                       <option key={option.id} value={option.name}>
+                         {option.name}
+                         {option.price && option.price > 0 && ` (+$${option.price.toFixed(2)})`}
+                       </option>
+                     ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {variant.options.map((option) => (
+                    <label key={option.id} className="flex items-center p-2 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={((selectedOptions.selectedVariants[variant.id] as string[]) || []).includes(option.name)}
+                        onChange={() => handleVariantChange(variant.id, option.name, true)}
+                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
+                      />
+                      <span className="flex-1 ml-2 text-gray-900 font-medium text-sm">{option.name}</span>
+                       {option.price && option.price > 0 && (
+                         <span className="text-green-700 font-semibold text-sm">
+                           +${option.price.toFixed(2)}
+                         </span>
+                       )}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Customer Note */}
+          <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+            <label htmlFor="customer-note" className="block text-base sm:text-lg font-semibold text-gray-900 mb-3">
+              Customer Note:
+            </label>
+            <textarea
+              id="customer-note"
+              value={selectedOptions.customerNote}
+              onChange={(e) => setSelectedOptions(prev => ({ ...prev, customerNote: e.target.value }))}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 resize-none text-sm"
+              rows={3}
+              placeholder="Any special instructions or requests..."
+            />
+          </div>
+        </div>
+
+        {/* Quantity and Add to Cart - Reduced padding */}
+         <div className="bg-gray-50 border-t border-gray-200 p-3 sm:p-4 lg:p-5 sticky bottom-0">
+           <div className="flex items-center justify-between mb-3">
+             <div className="flex items-center space-x-3">
+               <span className="text-sm sm:text-base font-medium text-gray-700">Quantity:</span>
+               <div className="flex items-center space-x-2">
+                 <button
+                   onClick={() => setSelectedOptions(prev => ({ 
+                     ...prev, 
+                     quantity: Math.max(1, prev.quantity - 1) 
+                   }))}
+                   aria-label="Decrease quantity"
+                   className="p-2 border border-gray-300 rounded-lg hover:bg-white hover:shadow-sm transition-all bg-white"
+                 >
+                   <Minus className="w-4 h-4 text-gray-600" aria-hidden="true" />
+                 </button>
+                 <span className="text-lg font-bold text-gray-900 min-w-[2.5rem] text-center">{selectedOptions.quantity}</span>
+                 <button
+                   onClick={() => setSelectedOptions(prev => ({ 
+                     ...prev, 
+                     quantity: prev.quantity + 1 
+                   }))}
+                   aria-label="Increase quantity"
+                   className="p-2 border border-gray-300 rounded-lg hover:bg-white hover:shadow-sm transition-all bg-white"
+                 >
+                   <Plus className="w-4 h-4 text-gray-600" aria-hidden="true" />
+                 </button>
+               </div>
+             </div>
+             <div className="text-right">
+               {/* Reduced total price font size */}
+               <div className="text-xl sm:text-2xl font-bold text-green-600">
+                 ${calculateTotalPrice().toFixed(2)}
+               </div>
+             </div>
+           </div>
+          
+          <button
+            onClick={handleAddToCart}
+            className="w-full bg-green-700 text-white py-3 px-4 rounded-lg hover:bg-green-800 transition-colors font-semibold text-base shadow-lg hover:shadow-xl"
+          >
+            Add to order
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductDetailModal;
