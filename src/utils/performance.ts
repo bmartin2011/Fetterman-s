@@ -7,13 +7,13 @@ export const trackWebVitals = () => {
     // Track Core Web Vitals
     import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
       // Web vitals are tracked but not logged to console in production
-if (process.env.NODE_ENV === 'development') {
-  getCLS(console.log);
-  getFID(console.log);
-  getFCP(console.log);
-  getLCP(console.log);
-  getTTFB(console.log);
-}
+      if (process.env.NODE_ENV === 'development') {
+        getCLS(console.log);
+        getFID(console.log);
+        getFCP(console.log);
+        getLCP(console.log);
+        getTTFB(console.log);
+      }
     }).catch(() => {
       // web-vitals not available
     });

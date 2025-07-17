@@ -1,4 +1,5 @@
-import { MeasurementUnit, MEASUREMENT_UNITS } from '../types';
+import { MeasurementUnit, MEASUREMENT_UNITS, SquareMeasurementUnit } from '../types';
+import { squareService } from '../services/squareService';
 
 // Convert MEASUREMENT_UNITS object to array for easier searching
 const MEASUREMENT_UNITS_ARRAY = Object.values(MEASUREMENT_UNITS);
@@ -180,4 +181,81 @@ export function calculatePricePerUnit(price: number, quantity: number, unit?: Me
   const formattedPrice = pricePerUnit.toFixed(2);
   
   return `$${formattedPrice}/${unit.abbreviation}`;
+}
+
+/**
+ * Get all available measurement units from Square and merge with local units
+ * @returns Combined array of measurement units
+ */
+export async function getAllMeasurementUnits(): Promise<MeasurementUnit[]> {
+  try {
+    const squareUnits = await squareService.getMeasurementUnits();
+    const convertedSquareUnits = squareService.convertSquareUnitsToMeasurementUnits(squareUnits);
+    
+    // Merge with local units, avoiding duplicates
+    const localUnits = Object.values(MEASUREMENT_UNITS);
+    const allUnits = [...localUnits];
+    
+    convertedSquareUnits.forEach(squareUnit => {
+      const exists = allUnits.find(unit => 
+        unit.abbreviation.toLowerCase() === squareUnit.abbreviation.toLowerCase() ||
+        unit.name.toLowerCase() === squareUnit.name.toLowerCase()
+      );
+      
+      if (!exists) {
+        allUnits.push(squareUnit);
+      }
+    });
+    
+    return allUnits;
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching Square measurement units:', error);
+    }
+    // Fallback to local units only
+    return Object.values(MEASUREMENT_UNITS);
+  }
+}
+
+/**
+ * Find a measurement unit by Square unit ID
+ * @param squareUnitId - The Square measurement unit ID
+ * @returns The corresponding MeasurementUnit or null
+ */
+export async function findMeasurementUnitBySquareId(squareUnitId: string): Promise<MeasurementUnit | null> {
+  try {
+    const squareUnits = await squareService.getMeasurementUnits();
+    const squareUnit = squareUnits.find(unit => unit.id === squareUnitId);
+    
+    if (squareUnit) {
+      const convertedUnits = squareService.convertSquareUnitsToMeasurementUnits([squareUnit]);
+      return convertedUnits[0] || null;
+    }
+    
+    return null;
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error finding Square measurement unit:', error);
+    }
+    return null;
+  }
+}
+
+/**
+ * Get measurement units filtered by type
+ * @param unitType - The type of units to filter by
+ * @returns Array of measurement units of the specified type
+ */
+export async function getMeasurementUnitsByType(unitType: 'weight' | 'volume' | 'length' | 'area' | 'generic'): Promise<MeasurementUnit[]> {
+  const allUnits = await getAllMeasurementUnits();
+  return allUnits.filter(unit => unit.type === unitType);
+}
+
+/**
+ * Convert Square measurement unit to our MeasurementUnit format
+ * @param squareUnit - The Square measurement unit
+ * @returns Converted MeasurementUnit
+ */
+export function convertSquareUnitToMeasurementUnit(squareUnit: SquareMeasurementUnit): MeasurementUnit {
+  return squareService.convertSquareUnitsToMeasurementUnits([squareUnit])[0];
 }

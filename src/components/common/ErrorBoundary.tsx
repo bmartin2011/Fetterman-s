@@ -25,7 +25,9 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log error to monitoring service in production
-    console.error('Error caught by boundary:', error, errorInfo);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error caught by boundary:', error, errorInfo);
+    }
     
     this.setState({
       error,
@@ -111,7 +113,9 @@ export default ErrorBoundary;
 // Hook version for functional components
 export const useErrorHandler = () => {
   const handleError = (error: Error, errorInfo?: any) => {
-    console.error('Error caught by hook:', error, errorInfo);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error caught by hook:', error, errorInfo);
+    }
     
     if (process.env.NODE_ENV === 'production') {
       // Send to error reporting service

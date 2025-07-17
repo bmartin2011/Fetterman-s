@@ -25,9 +25,7 @@ import BreakfastMenuPage from './pages/BreakfastMenuPage';
 import DeliMenuPage from './pages/DeliMenuPage';
 import MeatCheeseMenuPage from './pages/MeatCheeseMenuPage';
 
-// Debug Components
-import SquareAPITest from './components/SquareAPITest';
-import EnhancedFeaturesDemo from './components/demo/EnhancedFeaturesDemo';
+
 
 
 function App() {
@@ -70,11 +68,7 @@ function App() {
               <Route path="/menu/deli" element={<DeliMenuPage />} />
               <Route path="/menu/meat-cheese" element={<MeatCheeseMenuPage />} />
               
-              {/* Test Routes */}
-    
-              
 
-              
               {/* Checkout Routes */}
               <Route path="/checkout/success" element={<CheckoutSuccess />} />
               <Route path="/checkout/cancel" element={<CheckoutCancel />} />

@@ -27,9 +27,6 @@ reportWebVitals((metric) => {
   if (process.env.NODE_ENV === 'development') {
     console.log('📊 Web Vital:', metric);
   }
-  
   // In production, send to analytics service
-  if (process.env.NODE_ENV === 'production') {
-    // Example: analytics.track('web_vital', metric);
-  }
+  // Example: analytics.track('web_vital', metric);
 });

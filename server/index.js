@@ -27,24 +27,22 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Request logging middleware
-if (NODE_ENV !== 'production') {
-  app.use((req, res, next) => {
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV !== 'production') {
     const timestamp = new Date().toISOString();
     console.log(`[${timestamp}] ${req.method} ${req.url}`);
     console.log('Headers:', req.headers);
     
-    // Log request body for POST requests
-    if (req.method === 'POST' && req.body) {
+    if (req.body && Object.keys(req.body).length > 0) {
       console.log('Request body:', JSON.stringify(req.body, null, 2));
     }
-    
-    next();
-  });
-}
+  }
+  
+  next();
+});
 
-// Add CORS preflight logging
+// Handle CORS preflight requests
 app.options('*', (req, res) => {
-  console.log('CORS preflight request for:', req.url);
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
@@ -116,15 +114,10 @@ app.post('/api/square/products', async (req, res) => {
       include_related_objects: true
     };
     
-    console.log('Making request to Square catalog/search API with body:', JSON.stringify(requestBody, null, 2));
-    console.log('Request URL:', `${SQUARE_BASE_URL}/catalog/search`);
-    
     const data = await makeSquareRequest('/catalog/search', {
       method: 'POST',
       body: JSON.stringify(requestBody)
     });
-    
-    console.log('Square API response:', JSON.stringify(data, null, 2));
     res.json(data);
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -144,14 +137,10 @@ app.post('/api/square/categories', async (req, res) => {
       include_related_objects: true
     };
     
-    console.log('Making request to Square Catalog Search API for categories with body:', JSON.stringify(requestBody, null, 2));
-    
     const data = await makeSquareRequest('/catalog/search', {
       method: 'POST',
       body: JSON.stringify(requestBody)
     });
-    
-    console.log('Square API categories response:', JSON.stringify(data, null, 2));
     res.json(data);
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -170,14 +159,10 @@ app.post('/api/square/modifiers', async (req, res) => {
       include_related_objects: true
     };
     
-    console.log('Making request to Square Catalog Search API for modifiers with body:', JSON.stringify(requestBody, null, 2));
-    
     const data = await makeSquareRequest('/catalog/search', {
       method: 'POST',
       body: JSON.stringify(requestBody)
     });
-    
-    console.log('Square API modifiers response:', JSON.stringify(data, null, 2));
     res.json(data);
   } catch (error) {
     console.error('Error fetching modifiers:', error);
@@ -196,14 +181,10 @@ app.post('/api/square/discounts', async (req, res) => {
       include_related_objects: true
     };
     
-    console.log('Making request to Square Catalog Search API for discounts with body:', JSON.stringify(requestBody, null, 2));
-    
     const data = await makeSquareRequest('/catalog/search', {
       method: 'POST',
       body: JSON.stringify(requestBody)
     });
-    
-    console.log('Square API discounts response:', JSON.stringify(data, null, 2));
     res.json(data);
   } catch (error) {
     console.error('Error fetching discounts:', error);
@@ -211,7 +192,34 @@ app.post('/api/square/discounts', async (req, res) => {
     
     // Return empty response if no discounts are configured in Square
     if (error.message.includes('not found') || error.message.includes('No objects')) {
-      console.log('No discounts found in Square catalog, returning empty array');
+      res.json({ objects: [] });
+    } else {
+      res.status(500).json({ error: error.message });
+    }
+  }
+});
+
+// Get Square measurement units
+app.post('/api/square/measurement-units', async (req, res) => {
+  try {
+    // Use catalog/search endpoint for measurement units
+    const requestBody = {
+      object_types: ['MEASUREMENT_UNIT'],
+      include_deleted_objects: false,
+      include_related_objects: true
+    };
+    
+    const data = await makeSquareRequest('/catalog/search', {
+      method: 'POST',
+      body: JSON.stringify(requestBody)
+    });
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching measurement units:', error);
+    console.error('Full error details:', error);
+    
+    // Return empty response if no measurement units are configured in Square
+    if (error.message.includes('not found') || error.message.includes('No objects')) {
       res.json({ objects: [] });
     } else {
       res.status(500).json({ error: error.message });
@@ -224,19 +232,10 @@ app.post('/api/square/orders', async (req, res) => {
   try {
     const orderData = req.body;
     
-    console.log('Creating Square order with data:', JSON.stringify(orderData, null, 2));
-    
-    // If the order has applied discounts, log them for debugging
-    if (orderData.order && orderData.order.discounts) {
-      console.log('Order includes discounts:', JSON.stringify(orderData.order.discounts, null, 2));
-    }
-    
     const data = await makeSquareRequest('/orders', {
       method: 'POST',
       body: JSON.stringify(orderData)
     });
-    
-    console.log('Square order created:', JSON.stringify(data, null, 2));
     res.json(data);
   } catch (error) {
     console.error('Error creating order:', error);
@@ -270,14 +269,10 @@ app.post('/api/square/payment', [
       order_id: orderId
     };
 
-    console.log('Processing payment with data:', JSON.stringify(paymentData, null, 2));
-    
     const data = await makeSquareRequest('/payments', {
       method: 'POST',
       body: JSON.stringify(paymentData)
     });
-    
-    console.log('Payment processed:', JSON.stringify(data, null, 2));
     res.json(data);
   } catch (error) {
     console.error('Error processing payment:', error);
@@ -304,9 +299,7 @@ app.post('/api/square/create-checkout', async (req, res) => {
         return total + (discount.appliedAmount || 0);
       }, 0);
       totalAmount = Math.max(0, totalAmount - totalDiscount);
-      console.log('Applied discounts:', JSON.stringify(appliedDiscounts, null, 2));
-      console.log('Total discount amount:', totalDiscount);
-      console.log('Final amount after discounts:', totalAmount);
+
     }
     
     // Ensure we have a valid total amount
@@ -336,14 +329,10 @@ app.post('/api/square/create-checkout', async (req, res) => {
       }
     };
     
-    console.log('Creating Square checkout with data:', JSON.stringify(checkoutData, null, 2));
-    
     const data = await makeSquareRequest('/online-checkout/payment-links', {
       method: 'POST',
       body: JSON.stringify(checkoutData)
     });
-    
-    console.log('Square checkout created:', JSON.stringify(data, null, 2));
     
     // Return the checkout URL
     res.json({
@@ -355,6 +344,8 @@ app.post('/api/square/create-checkout', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 
 
@@ -372,6 +363,8 @@ app.use((error, req, res, next) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Square proxy server running on port ${PORT}`);
-  console.log(`Environment: ${SQUARE_ENVIRONMENT}`);
-  console.log(`Square Base URL: ${SQUARE_BASE_URL}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Environment: ${SQUARE_ENVIRONMENT}`);
+    console.log(`Square Base URL: ${SQUARE_BASE_URL}`);
+  }
 });

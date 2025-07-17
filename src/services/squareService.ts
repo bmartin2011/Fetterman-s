@@ -1,4 +1,4 @@
-import { CartItem, StoreLocation, Product, Category, ProductVariant, OrderStatus, Discount, AppliedDiscount, DiscountValidationResult, DiscountType } from '../types';
+import { CartItem, StoreLocation, Product, Category, ProductVariant, OrderStatus, Discount, AppliedDiscount, DiscountValidationResult, DiscountType, SquareMeasurementUnit, MeasurementUnit } from '../types';
 
 export interface SquareCheckoutData {
   items: CartItem[];
@@ -88,7 +88,9 @@ export class SquareService {
       
       throw new Error('No locations found in Square account');
     } catch (error) {
-      console.error('Error fetching location ID from Square:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching location ID from Square:', error);
+      }
       throw error;
     }
   }
@@ -142,7 +144,9 @@ export class SquareService {
           };
         });
     } catch (error) {
-      console.error('Error fetching Square locations:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching Square locations:', error);
+      }
       throw error;
     }
   }
@@ -359,7 +363,9 @@ export class SquareService {
         discountAmount: discountTotal
       };
     } catch (error) {
-      console.error('Error creating checkout session:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error creating checkout session:', error);
+      }
       throw error;
     }
   }
@@ -392,7 +398,9 @@ export class SquareService {
         paymentData
       };
     } catch (error) {
-      console.error('Error processing payment:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error processing payment:', error);
+      }
       throw error;
     }
   }
@@ -420,7 +428,9 @@ export class SquareService {
         orderId: result.orderId
       };
     } catch (error) {
-      console.error('Error creating checkout:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error creating checkout:', error);
+      }
       throw error;
     }
   }
@@ -672,7 +682,9 @@ export class SquareService {
         appliedAmount: appliedAmount / 100 // Convert back to dollars
       };
     } catch (error) {
-      console.error('Error validating discount:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error validating discount:', error);
+      }
       return {
         isValid: false,
         error: 'Failed to validate discount code'
@@ -799,9 +811,11 @@ export class SquareService {
        
        return appliedDiscounts;
      } catch (error) {
-       console.error('Error applying automatic discounts:', error);
-       return [];
-     }
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error applying automatic discounts:', error);
+      }
+      return [];
+    }
    }
 
    /**
@@ -1021,7 +1035,9 @@ export class SquareService {
       
       return products;
     } catch (error) {
-      console.error('Error fetching products from Square:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching discounts from Square:', error);
+      }
       throw error;
     }
   }
@@ -1231,7 +1247,9 @@ export class SquareService {
       
       return hierarchicalCategories;
     } catch (error) {
-      console.error('Error fetching categories from Square:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching categories from Square:', error);
+      }
       throw error;
     }
   }
@@ -1379,9 +1397,124 @@ export class SquareService {
       
       return modifiers;
     } catch (error) {
-      console.error('Error fetching modifiers from Square:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching modifiers from Square:', error);
+      }
       throw error;
     }
+  }
+
+  // Fetch measurement units from Square Catalog API
+  async getMeasurementUnits(): Promise<SquareMeasurementUnit[]> {
+    try {
+      // Check cache first
+      const cachedUnits = this.getCachedData<SquareMeasurementUnit[]>('measurement-units');
+      if (cachedUnits) {
+        return cachedUnits;
+      }
+
+      const response = await fetch(`${this.baseUrl}/measurement-units`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Square API error: ${errorData.errors?.[0]?.detail || response.statusText}`);
+      }
+
+      const data = await response.json();
+      const measurementUnits: SquareMeasurementUnit[] = [];
+
+      if (data.objects) {
+        data.objects.forEach((unit: any) => {
+          if (unit.type === 'MEASUREMENT_UNIT' && unit.measurement_unit_data) {
+            const unitData = unit.measurement_unit_data;
+            
+            const measurementUnit: SquareMeasurementUnit = {
+              id: unit.id,
+              name: unitData.measurement_unit?.custom_unit?.name || unitData.measurement_unit?.generic_unit || 'Unknown Unit',
+              abbreviation: unitData.measurement_unit?.custom_unit?.abbreviation || this.getGenericUnitAbbreviation(unitData.measurement_unit?.generic_unit),
+              type: unitData.measurement_unit?.type || 'CUSTOM',
+              precision: unitData.precision || 0,
+              customUnit: unitData.measurement_unit?.custom_unit,
+              genericUnit: unitData.measurement_unit?.generic_unit,
+              createdAt: unit.created_at || new Date().toISOString(),
+              updatedAt: unit.updated_at || new Date().toISOString()
+            };
+
+            measurementUnits.push(measurementUnit);
+          }
+        });
+      }
+
+      // Cache the results
+      this.setCachedData('measurement-units', measurementUnits);
+      
+      return measurementUnits;
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching measurement units from Square:', error);
+      }
+      // Return empty array if no measurement units are configured
+      return [];
+    }
+  }
+
+  // Convert Square measurement units to our MeasurementUnit format
+  convertSquareUnitsToMeasurementUnits(squareUnits: SquareMeasurementUnit[]): MeasurementUnit[] {
+    return squareUnits.map(squareUnit => {
+      const measurementUnit: MeasurementUnit = {
+        id: squareUnit.id,
+        name: squareUnit.name,
+        abbreviation: squareUnit.abbreviation,
+        type: this.mapSquareUnitTypeToMeasurementType(squareUnit.genericUnit || squareUnit.customUnit?.name || ''),
+        precision: squareUnit.precision
+      };
+      return measurementUnit;
+    });
+  }
+
+  // Helper method to map Square unit types to our measurement types
+  private mapSquareUnitTypeToMeasurementType(unitName: string): 'weight' | 'volume' | 'length' | 'area' | 'generic' {
+    const weightUnits = ['OUNCE', 'POUND', 'GRAM', 'KILOGRAM'];
+    const volumeUnits = ['FLUID_OUNCE', 'GALLON', 'LITER', 'MILLILITER'];
+    const lengthUnits = ['INCH', 'FOOT', 'YARD', 'METER', 'CENTIMETER', 'MILLIMETER'];
+    
+    const upperUnitName = unitName.toUpperCase();
+    
+    if (weightUnits.includes(upperUnitName)) {
+      return 'weight';
+    } else if (volumeUnits.includes(upperUnitName)) {
+      return 'volume';
+    } else if (lengthUnits.includes(upperUnitName)) {
+      return 'length';
+    } else {
+      return 'generic';
+    }
+  }
+
+  // Helper method to get abbreviations for generic units
+  private getGenericUnitAbbreviation(genericUnit: string): string {
+    const abbreviations: { [key: string]: string } = {
+      'OUNCE': 'oz',
+      'POUND': 'lb',
+      'FLUID_OUNCE': 'fl oz',
+      'GALLON': 'gal',
+      'LITER': 'L',
+      'MILLILITER': 'mL',
+      'GRAM': 'g',
+      'KILOGRAM': 'kg',
+      'INCH': 'in',
+      'FOOT': 'ft',
+      'YARD': 'yd',
+      'METER': 'm',
+      'CENTIMETER': 'cm',
+      'MILLIMETER': 'mm'
+    };
+    return abbreviations[genericUnit] || genericUnit;
   }
 
   // Method to clear cache (useful for refreshing data)

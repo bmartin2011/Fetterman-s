@@ -48,7 +48,9 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
             setStoreHours(location.hours);
           }
         } catch (error) {
-          console.error('Error fetching store hours:', error);
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error fetching store hours:', error);
+          }
         } finally {
           setIsLoading(false);
         }

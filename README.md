@@ -1,6 +1,6 @@
-# Fetterman's - Deli | Coffee | Kombucha | Ice Cream
+# Fetterman's Restaurant - Production Ready
 
-A modern, secure e-commerce platform built with React, TypeScript, and Square API integration.
+A modern, responsive restaurant ordering system with Square payment integration, built for production deployment.
 
 ## 🚀 Features
 

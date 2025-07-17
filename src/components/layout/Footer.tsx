@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Mail } from 'lucide-react';
 
 interface FooterProps {
   id?: string;
@@ -79,18 +79,6 @@ const Footer: React.FC<FooterProps> = ({ id }) => {
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">Contact Us</h3>
             <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <MapPin className="w-4 h-4 text-primary-400" aria-hidden="true" />
-                <span className="text-gray-300 text-sm">
-                  456 Culinary Avenue, Food District, FD 67890
-                </span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="w-4 h-4 text-primary-400" aria-hidden="true" />
-                <span className="text-gray-300 text-sm">
-                  +1 (555) FOOD-HUB
-                </span>
-              </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-4 h-4 text-primary-400" aria-hidden="true" />
                 <a 

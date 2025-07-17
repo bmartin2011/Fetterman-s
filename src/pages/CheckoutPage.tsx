@@ -95,7 +95,9 @@ const CheckoutPage: React.FC = () => {
         await squareService.initializeSquare();
         await squareService.initializeCard('card-container');
       } catch (error) {
-        console.error('Failed to initialize Square:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to initialize Square:', error);
+        }
       }
     };
 
@@ -149,7 +151,9 @@ const CheckoutPage: React.FC = () => {
       window.location.href = result.checkoutUrl;
       
     } catch (error) {
-      console.error('Square Checkout failed:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Square Checkout failed:', error);
+      }
       toast.error(`Checkout failed: ${error instanceof Error ? error.message : 'Please try again.'}`);
     } finally {
       setLoading(false);
@@ -216,7 +220,9 @@ const CheckoutPage: React.FC = () => {
         throw new Error(errorMessage);
       }
     } catch (error) {
-      console.error('Checkout failed:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Checkout failed:', error);
+      }
        alert(`Checkout failed: ${error instanceof Error ? error.message : 'Please try again.'}`);
     } finally {
       setLoading(false);
@@ -465,7 +471,9 @@ const CheckoutPage: React.FC = () => {
                         navigate('/checkout/success');
                       }}
                       onError={(error) => {
-                        console.error('Google Pay error:', error);
+                        if (process.env.NODE_ENV === 'development') {
+                          console.error('Google Pay error:', error);
+                        }
                         toast.error('Google Pay payment failed. Please try another payment method.');
                       }}
                       onCancel={() => {

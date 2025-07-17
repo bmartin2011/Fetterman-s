@@ -96,7 +96,9 @@ const ProductsPage: React.FC = () => {
       });
       
     } catch (error) {
-      console.error('Error fetching data:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching data:', error);
+      }
       toast.error('Failed to load menu data. Please try again.');
       setProductsLoading(false);
       setCategoriesLoading(false);

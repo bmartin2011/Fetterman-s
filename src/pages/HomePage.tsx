@@ -55,7 +55,9 @@ const HomePage: React.FC = () => {
         
         announce(`Page loaded successfully. ${featured.length} featured products available.`);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching data:', error);
+        }
         setError('Failed to load page content. Please try refreshing the page.');
         announce('Error loading page content. Please try refreshing the page.', 'assertive');
       } finally {

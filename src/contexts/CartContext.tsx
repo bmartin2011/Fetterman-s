@@ -67,7 +67,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
           setAppliedDiscounts(JSON.parse(savedDiscounts));
         }
       } catch (error) {
-        console.error('Error initializing cart:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error initializing cart:', error);
+        }
         // Fallback to empty locations array if Square API fails
         setStoreLocations([]);
       }
@@ -153,7 +155,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
           }
         }
       } catch (error) {
-        console.error('Error applying automatic discounts:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error applying automatic discounts:', error);
+        }
         // Don't show error to user as this is background functionality
       }
     };
@@ -326,7 +330,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         return false;
       }
     } catch (error) {
-      console.error('Error applying discount:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error applying discount:', error);
+      }
       toast.error('Failed to apply discount code');
       return false;
     }

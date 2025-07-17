@@ -38,6 +38,22 @@ export interface MeasurementUnit {
   precision?: number;
 }
 
+// Square-specific measurement unit interface
+export interface SquareMeasurementUnit {
+  id: string;
+  name: string;
+  abbreviation: string;
+  type: 'CUSTOM' | 'GENERIC';
+  precision: number;
+  customUnit?: {
+    name: string;
+    abbreviation: string;
+  };
+  genericUnit?: string; // e.g., 'OUNCE', 'POUND', 'FLUID_OUNCE'
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ProductVariantOption {
   id: string;
   name: string;
@@ -101,6 +117,8 @@ export const MEASUREMENT_UNITS: { [key: string]: MeasurementUnit } = {
 // Enhanced Product Interface with Square CatalogItem support
 
 
+// Enhanced Product Interface with Square CatalogItem support
+
 export interface Product {
   id: string;
   name: string;
@@ -128,8 +146,6 @@ export interface Product {
   unitQuantity?: number; // Quantity in the specified unit (e.g., 0.5 for half pound)
   stockable?: boolean; // Whether this item can be tracked in inventory
   sellable?: boolean; // Whether this item can be sold
-  
-
   
   isFeatured?: boolean; // Optional - not all products need to be featured
   ingredients?: string[];

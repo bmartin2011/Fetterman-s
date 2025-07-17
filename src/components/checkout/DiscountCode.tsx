@@ -65,7 +65,9 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({
         toast.error(validationResult.error || 'Invalid discount code');
       }
     } catch (error) {
-      console.error('Error applying discount:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error applying discount:', error);
+      }
       toast.error('Failed to apply discount code');
     } finally {
       setIsApplying(false);

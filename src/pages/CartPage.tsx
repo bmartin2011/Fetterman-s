@@ -82,7 +82,9 @@ const CartPage: React.FC = () => {
         throw new Error('Failed to create checkout - no checkout URL received');
       }
     } catch (error) {
-      console.error('Checkout error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Checkout error:', error);
+      }
       toast.error('Failed to proceed to checkout. Please try again.');
     } finally {
       setIsLoading(false);
