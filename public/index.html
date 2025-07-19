@@ -38,8 +38,24 @@
       </div>
     </noscript>
     <div id="root"></div>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          console.log('SW registered: ', registration);
+        }
+            })
+            .catch((registrationError) => {
+              if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          console.log('SW registration failed: ', registrationError);
+        }
+            });
+        });
+      }
+    </script>
   </body>
-</html>
-<script type="text/javascript" src="https://sandbox-web.squarecdn.com/v1/square.js"></script>
-<!-- For production, use: https://web.squarecdn.com/v1/square.js -->
 </html>

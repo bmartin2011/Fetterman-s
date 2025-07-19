@@ -191,7 +191,7 @@ const CheckoutPage: React.FC = () => {
     }
 
     if (!squareService.card) {
-       alert('Payment form not ready. Please wait a moment and try again.');
+       toast.error('Payment form not ready. Please wait a moment and try again.');
        return;
      }
 
@@ -245,7 +245,7 @@ const CheckoutPage: React.FC = () => {
       if (process.env.NODE_ENV === 'development') {
         console.error('Checkout failed:', error);
       }
-       alert(`Checkout failed: ${error instanceof Error ? error.message : 'Please try again.'}`);
+       toast.error(`Checkout failed: ${error instanceof Error ? error.message : 'Please try again.'}`);
     } finally {
       setLoading(false);
     }
@@ -492,7 +492,7 @@ const CheckoutPage: React.FC = () => {
                               type: 'PAYMENT_GATEWAY',
                               parameters: {
                                 gateway: 'square',
-                                gatewayMerchantId: 'sandbox-sq0idb-YOUR_MERCHANT_ID',
+                                gatewayMerchantId: process.env.REACT_APP_SQUARE_MERCHANT_ID || 'sandbox-sq0idb-YOUR_MERCHANT_ID',
                               },
                             },
                           },

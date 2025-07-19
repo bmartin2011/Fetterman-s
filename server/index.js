@@ -30,11 +30,13 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use((req, res, next) => {
   if (process.env.NODE_ENV !== 'production') {
     const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] ${req.method} ${req.url}`);
-    console.log('Headers:', req.headers);
-    
-    if (req.body && Object.keys(req.body).length > 0) {
-      console.log('Request body:', JSON.stringify(req.body, null, 2));
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[${timestamp}] ${req.method} ${req.url}`);
+      console.log('Headers:', req.headers);
+      
+      if (req.body && Object.keys(req.body).length > 0) {
+        console.log('Request body:', JSON.stringify(req.body, null, 2));
+      }
     }
   }
   
@@ -363,7 +365,7 @@ app.use((error, req, res, next) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Square proxy server running on port ${PORT}`);
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV === 'development') {
     console.log(`Environment: ${SQUARE_ENVIRONMENT}`);
     console.log(`Square Base URL: ${SQUARE_BASE_URL}`);
   }

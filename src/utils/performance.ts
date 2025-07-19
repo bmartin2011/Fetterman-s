@@ -1,21 +1,58 @@
 // Performance Monitoring Utilities
 import React from 'react';
 
-// Web Vitals tracking
+// Enhanced Web Vitals tracking with thresholds and analytics
+interface WebVitalMetric {
+  name: string;
+  value: number;
+  rating: 'good' | 'needs-improvement' | 'poor';
+  timestamp: number;
+}
+
+const webVitalsThresholds = {
+  CLS: { good: 0.1, poor: 0.25 },
+  FID: { good: 100, poor: 300 },
+  FCP: { good: 1800, poor: 3000 },
+  LCP: { good: 2500, poor: 4000 },
+  TTFB: { good: 800, poor: 1800 }
+};
+
+const getRating = (name: keyof typeof webVitalsThresholds, value: number): 'good' | 'needs-improvement' | 'poor' => {
+  const thresholds = webVitalsThresholds[name];
+  if (value <= thresholds.good) return 'good';
+  if (value <= thresholds.poor) return 'needs-improvement';
+  return 'poor';
+};
+
 export const trackWebVitals = () => {
   if (typeof window !== 'undefined' && 'performance' in window) {
-    // Track Core Web Vitals
+    // Track Core Web Vitals with enhanced analytics
     import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-      // Web vitals are tracked but not logged to console in production
-      if (process.env.NODE_ENV === 'development') {
-        getCLS(console.log);
-        getFID(console.log);
-        getFCP(console.log);
-        getLCP(console.log);
-        getTTFB(console.log);
-      }
+      const handleMetric = (metric: any) => {
+        const webVital: WebVitalMetric = {
+          name: metric.name,
+          value: metric.value,
+          rating: getRating(metric.name as keyof typeof webVitalsThresholds, metric.value),
+          timestamp: Date.now()
+        };
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`📊 ${webVital.name}: ${webVital.value.toFixed(2)}ms (${webVital.rating})`);
+        }
+
+        // Send to analytics in production
+        if (process.env.NODE_ENV === 'production') {
+          // Example: analytics.track('web_vital', webVital);
+        }
+      };
+
+      getCLS(handleMetric);
+      getFID(handleMetric);
+      getFCP(handleMetric);
+      getLCP(handleMetric);
+      getTTFB(handleMetric);
     }).catch(() => {
-      // web-vitals not available
+      console.warn('Web Vitals library not available');
     });
   }
 };
@@ -107,8 +144,8 @@ export const trackBundleSize = () => {
       const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
       
       if (process.env.NODE_ENV === 'development') {
-        console.log(`📦 Bundle Load Time: ${loadTime}ms`);
-      }
+         console.log(`📦 Bundle Load Time: ${loadTime}ms`);
+       }
       
       // In production, send to analytics
       if (process.env.NODE_ENV === 'production') {

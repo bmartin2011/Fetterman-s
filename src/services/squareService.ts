@@ -1,4 +1,6 @@
 import { CartItem, StoreLocation, Product, Category, ProductVariant, OrderStatus, Discount, AppliedDiscount, DiscountValidationResult, DiscountType, SquareMeasurementUnit, MeasurementUnit } from '../types';
+import { apiCache, cached, createCacheKey } from '../utils/cache';
+import { trackApiCall } from '../utils/performance';
 
 export interface SquareCheckoutData {
   items: CartItem[];
@@ -49,9 +51,14 @@ export class SquareService {
   private environment: string;
   private baseUrl: string;
   
-  // Simple in-memory cache
-  private cache: Map<string, { data: any; timestamp: number }> = new Map();
-  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  // Enhanced caching with performance monitoring
+  private readonly CACHE_TTL = {
+    locations: 30 * 60 * 1000, // 30 minutes
+    products: 15 * 60 * 1000,  // 15 minutes
+    categories: 30 * 60 * 1000, // 30 minutes
+    discounts: 10 * 60 * 1000,  // 10 minutes
+    modifiers: 20 * 60 * 1000   // 20 minutes
+  };
 
   constructor() {
     this.accessToken = process.env.REACT_APP_SQUARE_ACCESS_TOKEN || '';
@@ -64,9 +71,17 @@ export class SquareService {
     this.baseUrl = backendUrl.includes('/api/square') ? backendUrl : `${backendUrl}/api/square`;
   }
 
-  // Get the main location ID from Square
+  // Get the main location ID from Square with caching
   async getMainLocationId(): Promise<string> {
-    try {
+    const cacheKey = createCacheKey('main_location_id');
+    
+    // Try cache first
+    const cached = apiCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    return trackApiCall(async () => {
       const response = await fetch(`${this.baseUrl}/locations`, {
         method: 'GET',
         headers: {
@@ -82,22 +97,27 @@ export class SquareService {
       const data = await response.json();
       
       if (data.locations && data.locations.length > 0) {
-        // Return the first location ID (main location)
-        return data.locations[0].id;
+        const locationId = data.locations[0].id;
+        // Cache the result
+        apiCache.set(cacheKey, locationId, this.CACHE_TTL.locations);
+        return locationId;
       }
       
       throw new Error('No locations found in Square account');
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching location ID from Square:', error);
-      }
-      throw error;
-    }
+    }, 'getMainLocationId');
   }
 
-  // Fetch all locations from Square and map to our StoreLocation interface
+  // Fetch all locations from Square and map to our StoreLocation interface with caching
   async getSquareLocations(): Promise<StoreLocation[]> {
-    try {
+    const cacheKey = createCacheKey('square_locations');
+    
+    // Try cache first
+    const cached = apiCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    return trackApiCall(async () => {
       const response = await fetch(`${this.baseUrl}/locations`, {
         method: 'GET',
         headers: {
@@ -117,7 +137,7 @@ export class SquareService {
       }
 
       // Map Square locations to our StoreLocation interface
-      return data.locations
+      const locations = data.locations
         .filter((loc: any) => loc.status === 'ACTIVE') // Only active locations
         .map((location: any): StoreLocation => {
           const address = location.address || {};
@@ -143,12 +163,11 @@ export class SquareService {
             updatedAt: new Date().toISOString()
           };
         });
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching Square locations:', error);
-      }
-      throw error;
-    }
+      
+      // Cache the result
+      apiCache.set(cacheKey, locations, this.CACHE_TTL.locations);
+      return locations;
+    }, 'getSquareLocations');
   }
 
   // Helper method to map Square business hours to our format
@@ -460,19 +479,7 @@ export class SquareService {
     return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
   }
 
-  // Helper method to check cache
-  private getCachedData<T>(key: string): T | null {
-    const cached = this.cache.get(key);
-    if (cached && (Date.now() - cached.timestamp) < this.CACHE_DURATION) {
-      return cached.data as T;
-    }
-    return null;
-  }
-
-  // Helper method to set cache
-  private setCachedData<T>(key: string, data: T): void {
-    this.cache.set(key, { data, timestamp: Date.now() });
-  }
+  // Cache methods now use the enhanced caching utility
 
   // Discount Management Methods
   
@@ -488,13 +495,15 @@ export class SquareService {
    * @returns Array of available discounts
    */
   async getDiscounts(): Promise<Discount[]> {
-    try {
-      // Check cache first
-      const cachedDiscounts = this.getCachedData<Discount[]>('discounts');
-      if (cachedDiscounts) {
-  
-        return cachedDiscounts;
-      }
+    const cacheKey = createCacheKey('discounts');
+    
+    // Check cache first
+    const cachedDiscounts = apiCache.get(cacheKey);
+    if (cachedDiscounts) {
+      return cachedDiscounts;
+    }
+
+    return trackApiCall(async () => {
 
       const response = await fetch(`${this.baseUrl}/discounts`, {
         method: 'POST',
@@ -549,14 +558,14 @@ export class SquareService {
       }
 
       // Cache the results
-      this.setCachedData('discounts', discounts);
+      apiCache.set(cacheKey, discounts, this.CACHE_TTL.discounts);
       
       return discounts;
-    } catch (error) {
+    }, 'getDiscounts').catch(error => {
       console.error('Error fetching discounts from Square:', error);
       // Return fallback mock discounts if Square API fails
       return this.getFallbackDiscounts();
-    }
+    });
   }
 
   /**
@@ -878,12 +887,16 @@ export class SquareService {
 
   // Fetch products from Square Catalog API
   async getProducts(): Promise<Product[]> {
+    const cacheKey = createCacheKey('products');
+    
+    // Check cache first
+    const cachedProducts = apiCache.get(cacheKey) as Product[] | null;
+    if (cachedProducts) {
+      return cachedProducts;
+    }
+
+    return trackApiCall(async () => {
     try {
-      // Check cache first
-      const cachedProducts = this.getCachedData<Product[]>('products');
-      if (cachedProducts) {
-        return cachedProducts;
-      }
 
       // Fetch products, modifiers, and categories
       const [productsResponse, modifiersData, categoriesData] = await Promise.all([
@@ -1031,15 +1044,16 @@ export class SquareService {
       }
 
       // Cache the results
-      this.setCachedData('products', products);
+      apiCache.set(cacheKey, products, this.CACHE_TTL.products);
       
       return products;
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching discounts from Square:', error);
+        console.error('Error fetching products from Square:', error);
       }
       throw error;
     }
+    }, 'getProducts');
   }
 
   // Helper method to map Square variations to our variant format with enhanced support
@@ -1175,12 +1189,16 @@ export class SquareService {
    * Snacks (standalone - no subcategories)
    */
   async getCategories(): Promise<Category[]> {
+    const cacheKey = createCacheKey('categories');
+    
+    // Check cache first
+    const cachedCategories = apiCache.get(cacheKey) as Category[] | null;
+    if (cachedCategories) {
+      return cachedCategories;
+    }
+
+    return trackApiCall(async () => {
     try {
-      // Check cache first
-      const cachedCategories = this.getCachedData<Category[]>('categories');
-      if (cachedCategories) {
-        return cachedCategories;
-      }
 
       const response = await fetch(`${this.baseUrl}/categories`, {
         method: 'POST',
@@ -1243,7 +1261,7 @@ export class SquareService {
       }
 
       // Cache the results
-      this.setCachedData('categories', hierarchicalCategories);
+      apiCache.set(cacheKey, hierarchicalCategories, this.CACHE_TTL.categories);
       
       return hierarchicalCategories;
     } catch (error) {
@@ -1252,6 +1270,7 @@ export class SquareService {
       }
       throw error;
     }
+    }, 'getCategories');
   }
 
   // Helper method to build category hierarchy
@@ -1339,12 +1358,16 @@ export class SquareService {
 
   // Fetch modifiers from Square Catalog API
   async getModifiers(): Promise<any[]> {
+    const cacheKey = createCacheKey('modifiers');
+    
+    // Check cache first
+    const cachedModifiers = apiCache.get(cacheKey) as any[] | null;
+    if (cachedModifiers) {
+      return cachedModifiers;
+    }
+
+    return trackApiCall(async () => {
     try {
-      // Check cache first
-      const cachedModifiers = this.getCachedData<any[]>('modifiers');
-      if (cachedModifiers) {
-        return cachedModifiers;
-      }
 
       const response = await fetch(`${this.baseUrl}/modifiers`, {
         method: 'POST',
@@ -1393,7 +1416,7 @@ export class SquareService {
       }
 
       // Cache the results
-      this.setCachedData('modifiers', modifiers);
+      apiCache.set(cacheKey, modifiers, this.CACHE_TTL.modifiers);
       
       return modifiers;
     } catch (error) {
@@ -1402,16 +1425,21 @@ export class SquareService {
       }
       throw error;
     }
+    }, 'getModifiers');
   }
 
   // Fetch measurement units from Square Catalog API
   async getMeasurementUnits(): Promise<SquareMeasurementUnit[]> {
+    const cacheKey = createCacheKey('measurement-units');
+    
+    // Check cache first
+    const cachedUnits = apiCache.get(cacheKey) as SquareMeasurementUnit[] | null;
+    if (cachedUnits) {
+      return cachedUnits;
+    }
+
+    return trackApiCall(async () => {
     try {
-      // Check cache first
-      const cachedUnits = this.getCachedData<SquareMeasurementUnit[]>('measurement-units');
-      if (cachedUnits) {
-        return cachedUnits;
-      }
 
       const response = await fetch(`${this.baseUrl}/measurement-units`, {
         method: 'POST',
@@ -1451,7 +1479,7 @@ export class SquareService {
       }
 
       // Cache the results
-      this.setCachedData('measurement-units', measurementUnits);
+      apiCache.set(cacheKey, measurementUnits, this.CACHE_TTL.modifiers);
       
       return measurementUnits;
     } catch (error) {
@@ -1461,6 +1489,7 @@ export class SquareService {
       // Return empty array if no measurement units are configured
       return [];
     }
+    }, 'getMeasurementUnits');
   }
 
   // Convert Square measurement units to our MeasurementUnit format
@@ -1519,12 +1548,12 @@ export class SquareService {
 
   // Method to clear cache (useful for refreshing data)
   clearCache(): void {
-    this.cache.clear();
+    apiCache.clear();
   }
 
   // Method to clear specific cache entry
   clearCacheEntry(key: string): void {
-    this.cache.delete(key);
+    apiCache.delete(key);
   }
 }
 
