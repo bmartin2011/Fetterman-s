@@ -83,7 +83,19 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
     const date = new Date(tempSelectedDate);
     const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-    const hours = storeHours?.[dayName];
+    
+    // Use fallback hours if no store hours are available
+    const fallbackHours = {
+      monday: { open: '07:00', close: '19:00', closed: false },
+      tuesday: { open: '07:00', close: '19:00', closed: false },
+      wednesday: { open: '07:00', close: '19:00', closed: false },
+      thursday: { open: '07:00', close: '19:00', closed: false },
+      friday: { open: '07:00', close: '19:00', closed: false },
+      saturday: { open: '08:00', close: '18:00', closed: false },
+      sunday: { open: '09:00', close: '17:00', closed: false }
+    };
+    
+    const hours = storeHours?.[dayName] || fallbackHours[dayName as keyof typeof fallbackHours];
 
     if (!hours || hours.closed) {
       setAvailableTimes([]);
@@ -99,6 +111,18 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     
     const now = new Date();
     const isToday = tempSelectedDate === now.toISOString().split('T')[0];
+    
+    // Debug logging
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Generating times for:', {
+        date: tempSelectedDate,
+        dayName,
+        hours,
+        isToday,
+        openTime,
+        closeTime
+      });
+    }
     
     // Generate 15-minute intervals within store hours
     for (let time = openTime; time < closeTime; time += 15) {
@@ -118,6 +142,11 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         // For future dates, show all available times within store hours
         times.push(timeString);
       }
+    }
+    
+    // Debug logging
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Generated times:', times);
     }
     
     setAvailableTimes(times);
