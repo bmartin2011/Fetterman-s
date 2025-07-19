@@ -97,18 +97,25 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     const openTime = openHour * 60 + openMinute;
     const closeTime = closeHour * 60 + closeMinute;
     
-    // Generate 15-minute intervals
+    const now = new Date();
+    const isToday = tempSelectedDate === now.toISOString().split('T')[0];
+    
+    // Generate 15-minute intervals within store hours
     for (let time = openTime; time < closeTime; time += 15) {
       const hour = Math.floor(time / 60);
       const minute = time % 60;
       const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
       
-      // Skip times that are too soon (need at least 30 minutes preparation time)
-      const now = new Date();
-      const selectedDateTime = new Date(tempSelectedDate + 'T' + timeString);
-      const timeDiff = selectedDateTime.getTime() - now.getTime();
-      
-      if (timeDiff >= 30 * 60 * 1000) { // 30 minutes minimum
+      // For today, skip times that are too soon (need at least 30 minutes preparation time)
+      if (isToday) {
+        const selectedDateTime = new Date(tempSelectedDate + 'T' + timeString);
+        const timeDiff = selectedDateTime.getTime() - now.getTime();
+        
+        if (timeDiff >= 30 * 60 * 1000) { // 30 minutes minimum
+          times.push(timeString);
+        }
+      } else {
+        // For future dates, show all available times within store hours
         times.push(timeString);
       }
     }

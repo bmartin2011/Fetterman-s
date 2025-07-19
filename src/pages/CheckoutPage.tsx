@@ -4,6 +4,7 @@ import { useCart } from '../contexts/CartContext';
 import { squareService } from '../services/squareService';
 import GooglePayButton from '@google-pay/button-react';
 import DiscountCode from '../components/checkout/DiscountCode';
+import DateTimePicker from '../components/common/DateTimePicker';
 
 import { 
   CreditCard, 
@@ -43,7 +44,8 @@ const CheckoutPage: React.FC = () => {
     clearCart, 
     selectedLocation,
     selectedPickupDate,
-    selectedPickupTime
+    selectedPickupTime,
+    setPickupDateTime
   } = useCart();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -121,11 +123,27 @@ const CheckoutPage: React.FC = () => {
     return true;
   };
 
+  const validatePickupDateTime = () => {
+    if (!selectedPickupDate) {
+      toast.error('Please select a pickup date');
+      return false;
+    }
+    if (!selectedPickupTime) {
+      toast.error('Please select a pickup time');
+      return false;
+    }
+    return true;
+  };
+
   // Handle Square Checkout redirect (new simplified approach)
   const handleSquareCheckoutRedirect = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateCustomerInfo()) {
+      return;
+    }
+
+    if (!validatePickupDateTime()) {
       return;
     }
 
@@ -165,6 +183,10 @@ const CheckoutPage: React.FC = () => {
     e.preventDefault();
     
     if (!validateCustomerInfo()) {
+      return;
+    }
+
+    if (!validatePickupDateTime()) {
       return;
     }
 
@@ -328,14 +350,39 @@ const CheckoutPage: React.FC = () => {
                 <MapPin className="w-5 h-5 mr-2" />
                 Pickup at
               </h2>
-              <div className="flex items-start">
+              <div className="flex items-start mb-4">
                 <MapPin className="w-5 h-5 text-gray-400 mr-3 mt-1" />
                 <div>
                   <p className="font-medium text-gray-900">{selectedLocation.name}</p>
                   <p className="text-sm text-gray-600">{selectedLocation.address}, {selectedLocation.city}</p>
-                  <p className="text-sm text-gray-600">Today at 7:05 AM</p>
+                  {selectedPickupDate && selectedPickupTime ? (
+                    <p className="text-sm text-gray-600">
+                      {new Date(selectedPickupDate).toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })} at {new Date(`2000-01-01T${selectedPickupTime}`).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-red-600">Please select pickup date and time</p>
+                  )}
                 </div>
               </div>
+              
+              {/* Date Time Picker */}
+              <div className="mb-4">
+                <DateTimePicker
+                  selectedDate={selectedPickupDate || undefined}
+                  selectedTime={selectedPickupTime || undefined}
+                  onDateTimeSelect={setPickupDateTime}
+                  selectedLocation={selectedLocation}
+                />
+              </div>
+              
               <div className="mt-4 flex items-center">
                 <input type="checkbox" id="curbside" className="mr-2" />
                 <label htmlFor="curbside" className="text-sm text-gray-600">Curbside pickup</label>
