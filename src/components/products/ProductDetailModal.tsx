@@ -211,34 +211,12 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
       return;
     }
     
-    // Create special instructions from selections
+    // Create special instructions from customer note only
     const instructions = [];
     
-    // Add variant selections to instructions
-    if (product.variants) {
-      product.variants.forEach(variant => {
-        const selectedValue = selectedOptions.selectedVariants[variant.id];
-        if (selectedValue) {
-          if (Array.isArray(selectedValue) && selectedValue.length > 0) {
-            const selectedLabels = selectedValue.map(optionValue => {
-              const option = variant.options.find(opt => opt.name === optionValue);
-              return option?.name;
-            }).filter(Boolean);
-            if (selectedLabels.length > 0) {
-              instructions.push(`${variant.name}: ${selectedLabels.join(', ')}`);
-            }
-          } else if (typeof selectedValue === 'string') {
-            const option = variant.options.find(opt => opt.name === selectedValue);
-            if (option) {
-              instructions.push(`${variant.name}: ${option.name}`);
-            }
-          }
-        }
-      });
-    }
-    
+    // Only add customer note to instructions, not variant selections
     if (selectedOptions.customerNote) {
-      instructions.push(`Note: ${selectedOptions.customerNote}`);
+      instructions.push(selectedOptions.customerNote);
     }
     
     addToCart(
