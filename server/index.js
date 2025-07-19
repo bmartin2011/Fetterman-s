@@ -10,6 +10,24 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
+// Cache cleanup interval (every 10 minutes)
+setInterval(() => {
+  const now = Date.now();
+  let cleaned = 0;
+  
+  for (const [key, value] of apiCache.entries()) {
+    // Remove entries older than their TTL
+    if (now - value.timestamp > 60 * 60 * 1000) { // Max 1 hour
+      apiCache.delete(key);
+      cleaned++;
+    }
+  }
+  
+  if (cleaned > 0) {
+    console.log(`Cleaned ${cleaned} expired cache entries`);
+  }
+}, 10 * 60 * 1000);
+
 // Security middleware
 app.use(helmet(helmetConfig));
 
@@ -58,8 +76,43 @@ const SQUARE_BASE_URL = SQUARE_ENVIRONMENT === 'production'
   ? 'https://connect.squareup.com/v2' 
   : 'https://connect.squareupsandbox.com/v2';
 
-// Helper function to make Square API requests
+// Simple in-memory cache for Square API responses
+const apiCache = new Map();
+const CACHE_TTL = {
+  locations: 30 * 60 * 1000, // 30 minutes
+  products: 30 * 60 * 1000,  // 30 minutes
+  categories: 60 * 60 * 1000, // 60 minutes
+  modifiers: 30 * 60 * 1000,  // 30 minutes
+  discounts: 15 * 60 * 1000   // 15 minutes
+};
+
+// Helper function to create cache key
+function createCacheKey(endpoint, body = null) {
+  return `${endpoint}_${body ? JSON.stringify(body) : 'no_body'}`;
+}
+
+// Helper function to make Square API requests with caching
 async function makeSquareRequest(endpoint, options = {}) {
+  // Determine cache type based on endpoint
+  let cacheType = 'default';
+  if (endpoint.includes('/locations')) cacheType = 'locations';
+  else if (endpoint.includes('/catalog/search')) {
+    if (options.body && options.body.includes('ITEM')) cacheType = 'products';
+    else if (options.body && options.body.includes('CATEGORY')) cacheType = 'categories';
+    else if (options.body && options.body.includes('MODIFIER')) cacheType = 'modifiers';
+    else if (options.body && options.body.includes('DISCOUNT')) cacheType = 'discounts';
+  }
+
+  const cacheKey = createCacheKey(endpoint, options.body);
+  const ttl = CACHE_TTL[cacheType] || 5 * 60 * 1000; // 5 minutes default
+
+  // Check cache first
+  const cached = apiCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < ttl) {
+    console.log(`Cache hit for ${endpoint}`);
+    return cached.data;
+  }
+
   const url = `${SQUARE_BASE_URL}${endpoint}`;
   const headers = {
     'Authorization': `Bearer ${SQUARE_ACCESS_TOKEN}`,
@@ -78,7 +131,16 @@ async function makeSquareRequest(endpoint, options = {}) {
     throw new Error(`Square API error: ${errorData.errors?.[0]?.detail || response.statusText}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  
+  // Cache the response
+  apiCache.set(cacheKey, {
+    data,
+    timestamp: Date.now()
+  });
+
+  console.log(`Cache miss for ${endpoint} - cached for ${ttl}ms`);
+  return data;
 }
 
 // Routes

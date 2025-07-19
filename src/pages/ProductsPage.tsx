@@ -64,33 +64,20 @@ const ProductsPage: React.FC = () => {
       setProductsLoading(true);
       setCategoriesLoading(true);
       
-
+      // Prioritize categories first for faster UI rendering
+      const categoriesData = await squareService.getCategories();
+      setCategories(categoriesData);
+      setCategoriesLoading(false);
       
-      // Fetch data with staggered loading for better UX
-      const categoriesPromise = squareService.getCategories().then(data => {
-        setCategories(data);
-        setCategoriesLoading(false);
-        return data;
-      });
-      
-      const productsPromise = squareService.getProducts().then(data => {
-        setProducts(data);
-        setFilteredProducts(data);
-        setProductsLoading(false);
-        return data;
-      });
-      
-      const [fetchedProducts, categoriesData] = await Promise.all([
-        productsPromise,
-        categoriesPromise
-      ]);
-      
-      
-
+      // Then fetch products with a slight delay to prevent overwhelming the API
+      const productsData = await squareService.getProducts();
+      setProducts(productsData);
+      setFilteredProducts(productsData);
+      setProductsLoading(false);
       
       // Update cache
       setDataCache({
-        products: fetchedProducts,
+        products: productsData,
         categories: categoriesData,
         timestamp: now
       });

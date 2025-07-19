@@ -75,7 +75,7 @@ export interface ProductVariant {
   selectionType?: 'SINGLE' | 'MULTIPLE';
   minSelectedModifiers?: number;
   maxSelectedModifiers?: number;
-  isRequired?: boolean; // Computed from minSelectedModifiers > 0
+  isRequired?: boolean; // Computed from minSelectedModifiers > 0 (Square's required logic)
   createdAt?: string;
   updatedAt?: string;
 }

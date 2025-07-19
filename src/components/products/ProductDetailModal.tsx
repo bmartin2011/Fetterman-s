@@ -104,19 +104,20 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
       product.variants.forEach(variant => {
         const selectedCount = getSelectedCount(variant.id);
         const minRequired = variant.minSelectedModifiers || 0;
-        const maxAllowed = variant.maxSelectedModifiers || 1;
+        const maxAllowed = variant.maxSelectedModifiers; // Don't default to 1
         
-        // Check minimum requirements
-        if (minRequired > 0 && selectedCount < minRequired) {
-          if (minRequired === 1) {
+        // Check minimum requirements - dropdowns always require selection
+        const actualMinRequired = variant.type === 'dropdown' ? Math.max(minRequired, 1) : minRequired;
+        if (selectedCount < actualMinRequired) {
+          if (actualMinRequired === 1) {
             errors.push(`${variant.name}: Please select an option`);
           } else {
-            errors.push(`${variant.name}: Please select at least ${minRequired} option(s)`);
+            errors.push(`${variant.name}: Please select at least ${actualMinRequired} option(s)`);
           }
         }
         
-        // Check maximum limits
-        if (selectedCount > maxAllowed) {
+        // Check maximum limits only if maxAllowed is defined
+        if (maxAllowed !== undefined && selectedCount > maxAllowed) {
           errors.push(`${variant.name}: Maximum ${maxAllowed} selection(s) allowed`);
         }
       });
@@ -128,7 +129,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
   const handleVariantChange = (variantId: string, optionValue: string, isMultiple: boolean = false) => {
     setSelectedOptions(prev => {
       const variant = product.variants?.find(v => v.id === variantId);
-      const maxAllowed = variant?.maxSelectedModifiers || 1;
+      const maxAllowed = variant?.maxSelectedModifiers; // Don't default to 1
       
       if (isMultiple) {
         const currentValues = (prev.selectedVariants[variantId] as string[]) || [];
@@ -142,8 +143,8 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
             }
           };
         } else {
-          // Check if we can add more options
-          if (currentValues.length < maxAllowed) {
+          // Check if we can add more options (only if maxAllowed is defined)
+          if (maxAllowed === undefined || currentValues.length < maxAllowed) {
             return {
               ...prev,
               selectedVariants: {
@@ -344,14 +345,15 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
           {product.variants?.map((variant: ProductVariant) => {
             const selectedCount = getSelectedCount(variant.id);
             const minRequired = variant.minSelectedModifiers || 0;
-            const maxAllowed = variant.maxSelectedModifiers || 1;
+            const maxAllowed = variant.maxSelectedModifiers; // Don't default to 1
+            const isRequired = variant.type === 'dropdown' || minRequired > 0; // Dropdowns are always required, checklists based on Square config
             
             return (
               <div key={variant.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                      {variant.name}
-                     {variant.isRequired ? (
+                     {isRequired ? (
                        <span className="text-red-500 ml-1">*</span>
                      ) : (
                        <span className="text-gray-500 ml-1">(Optional)</span>
@@ -359,7 +361,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
                   </h3>
                   {variant.type === 'checklist' && (
                     <span className="text-xs text-gray-500">
-                      {selectedCount}/{maxAllowed} selected
+                      {selectedCount}{maxAllowed !== undefined ? `/${maxAllowed}` : ''} selected
                       {minRequired > 0 && ` (min: ${minRequired})`}
                     </span>
                   )}
@@ -390,7 +392,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
                   <div className="space-y-2">
                     {variant.options.map((option) => {
                       const isSelected = ((selectedOptions.selectedVariants[variant.id] as string[]) || []).includes(option.name);
-                      const isMaxReached = selectedCount >= maxAllowed && !isSelected;
+                      const isMaxReached = maxAllowed !== undefined && selectedCount >= maxAllowed && !isSelected;
                       
                       return (
                         <label key={option.id} className={`flex items-center p-2 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors ${

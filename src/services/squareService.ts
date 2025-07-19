@@ -54,10 +54,10 @@ export class SquareService {
   // Enhanced caching with performance monitoring
   private readonly CACHE_TTL = {
     locations: 30 * 60 * 1000, // 30 minutes
-    products: 15 * 60 * 1000,  // 15 minutes
-    categories: 30 * 60 * 1000, // 30 minutes
-    discounts: 10 * 60 * 1000,  // 10 minutes
-    modifiers: 20 * 60 * 1000   // 20 minutes
+    products: 30 * 60 * 1000,  // 30 minutes (increased for better performance)
+    categories: 60 * 60 * 1000, // 60 minutes (categories change less frequently)
+    discounts: 15 * 60 * 1000,  // 15 minutes
+    modifiers: 30 * 60 * 1000   // 30 minutes
   };
 
   constructor() {
@@ -1150,7 +1150,8 @@ export class SquareService {
         
         if (modifierList && modifierList.enabled) {
           const minSelected = modifierList.minSelectedModifiers || 0;
-          const maxSelected = modifierList.maxSelectedModifiers || 1;
+          // Don't default maxSelected to 1 - use the actual Square data or undefined for unlimited
+          const maxSelected = modifierList.maxSelectedModifiers;
           
           const variant: ProductVariant = {
             id: modifierList.id,
@@ -1403,7 +1404,7 @@ export class SquareService {
               description: modifierListData.description || '',
               selectionType: modifierListData.selection_type || 'SINGLE',
               minSelectedModifiers: modifierListData.min_selected_modifiers || 0,
-              maxSelectedModifiers: modifierListData.max_selected_modifiers || 1,
+              maxSelectedModifiers: modifierListData.max_selected_modifiers,
               enabled: modifierListData.enabled !== false,
               ordinal: modifierListData.ordinal || 0,
               modifiers: (modifierListData.modifiers || []).map((mod: any) => ({
