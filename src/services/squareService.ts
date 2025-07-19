@@ -1149,14 +1149,22 @@ export class SquareService {
         const modifierList = modifiersData.find(mod => mod.id === modifierListId);
         
         if (modifierList && modifierList.enabled) {
+          const minSelected = modifierList.minSelectedModifiers || 0;
+          const maxSelected = modifierList.maxSelectedModifiers || 1;
+          
           const variant: ProductVariant = {
             id: modifierList.id,
             name: modifierList.name,
             type: modifierList.selectionType === 'MULTIPLE' ? 'checklist' : 'dropdown',
+            selectionType: modifierList.selectionType,
+            minSelectedModifiers: minSelected,
+            maxSelectedModifiers: maxSelected,
+            isRequired: minSelected > 0,
             options: modifierList.modifiers.map((modifier: any) => ({
               id: modifier.id,
               name: modifier.name,
-              price: modifier.price || 0
+              price: modifier.price || 0,
+              onByDefault: modifier.onByDefault || false
             }))
           };
           

@@ -63,6 +63,7 @@ export interface ProductVariantOption {
   sellable?: boolean;
   measurementUnit?: MeasurementUnit;
   unitQuantity?: number; // Quantity in the specified unit
+  onByDefault?: boolean; // Whether modifier is pre-selected by default
 }
 
 export interface ProductVariant {
@@ -74,6 +75,7 @@ export interface ProductVariant {
   selectionType?: 'SINGLE' | 'MULTIPLE';
   minSelectedModifiers?: number;
   maxSelectedModifiers?: number;
+  isRequired?: boolean; // Computed from minSelectedModifiers > 0
   createdAt?: string;
   updatedAt?: string;
 }

@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { X, Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, ChevronDown, ChevronUp, Minus, Plus } from 'lucide-react';
 import { Product, ProductVariant } from '../../types';
 import { useCart } from '../../contexts/CartContext';
-
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 interface ProductDetailModalProps {
   product: Product;
@@ -61,10 +60,76 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
     customerNote: ''
   });
 
+  // Initialize default selections when modal opens
+  React.useEffect(() => {
+    if (isOpen && product.variants) {
+      const defaultSelections: { [variantId: string]: string | string[] } = {};
+      
+      product.variants.forEach(variant => {
+        const defaultOptions = variant.options.filter(option => option.onByDefault);
+        if (defaultOptions.length > 0) {
+          if (variant.type === 'checklist') {
+            defaultSelections[variant.id] = defaultOptions.map(option => option.name);
+          } else {
+            defaultSelections[variant.id] = defaultOptions[0].name;
+          }
+        }
+      });
+      
+      if (Object.keys(defaultSelections).length > 0) {
+        setSelectedOptions(prev => ({
+          ...prev,
+          selectedVariants: { ...prev.selectedVariants, ...defaultSelections }
+        }));
+      }
+    }
+  }, [isOpen, product.variants]);
+
   if (!isOpen) return null;
+
+  // Helper function to get selection count for a variant
+  const getSelectedCount = (variantId: string): number => {
+    const selected = selectedOptions.selectedVariants[variantId];
+    if (Array.isArray(selected)) {
+      return selected.length;
+    }
+    return selected ? 1 : 0;
+  };
+
+  // Validation function for modifier selections
+  const validateModifierSelections = (): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    if (product.variants) {
+      product.variants.forEach(variant => {
+        const selectedCount = getSelectedCount(variant.id);
+        const minRequired = variant.minSelectedModifiers || 0;
+        const maxAllowed = variant.maxSelectedModifiers || 1;
+        
+        // Check minimum requirements
+        if (minRequired > 0 && selectedCount < minRequired) {
+          if (minRequired === 1) {
+            errors.push(`${variant.name}: Please select an option`);
+          } else {
+            errors.push(`${variant.name}: Please select at least ${minRequired} option(s)`);
+          }
+        }
+        
+        // Check maximum limits
+        if (selectedCount > maxAllowed) {
+          errors.push(`${variant.name}: Maximum ${maxAllowed} selection(s) allowed`);
+        }
+      });
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  };
 
   const handleVariantChange = (variantId: string, optionValue: string, isMultiple: boolean = false) => {
     setSelectedOptions(prev => {
+      const variant = product.variants?.find(v => v.id === variantId);
+      const maxAllowed = variant?.maxSelectedModifiers || 1;
+      
       if (isMultiple) {
         const currentValues = (prev.selectedVariants[variantId] as string[]) || [];
         const exists = currentValues.includes(optionValue);
@@ -77,13 +142,19 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
             }
           };
         } else {
-          return {
-            ...prev,
-            selectedVariants: {
-              ...prev.selectedVariants,
-              [variantId]: [...currentValues, optionValue]
-            }
-          };
+          // Check if we can add more options
+          if (currentValues.length < maxAllowed) {
+            return {
+              ...prev,
+              selectedVariants: {
+                ...prev.selectedVariants,
+                [variantId]: [...currentValues, optionValue]
+              }
+            };
+          } else {
+            // Maximum reached, don't add
+            return prev;
+          }
         }
       } else {
         return {
@@ -130,6 +201,15 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
   };
 
   const handleAddToCart = () => {
+    // Validate modifier selections
+    const validation = validateModifierSelections();
+    if (!validation.isValid) {
+      validation.errors.forEach(error => {
+        toast.error(error);
+      });
+      return;
+    }
+    
     // Create special instructions from selections
     const instructions = [];
     
@@ -261,60 +341,82 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
           )}
 
           {/* Product Variants - Reduced spacing and font sizes */}
-          {product.variants?.map((variant: ProductVariant) => (
-            <div key={variant.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                  {variant.name}
-                </h3>
-                <span className="text-xs text-gray-700 bg-gray-200 px-2 py-1 rounded-full font-medium">
-                  Optional
-                </span>
-              </div>
-              
-              {variant.type === 'dropdown' ? (
-                <div className="relative">
-                  <label htmlFor={`variant-${variant.id}`} className="sr-only">
-                    {variant.name} selection
-                  </label>
-                  <select
-                    id={`variant-${variant.id}`}
-                    value={selectedOptions.selectedVariants[variant.id] || ''}
-                    onChange={(e) => handleVariantChange(variant.id, e.target.value, false)}
-                    className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none cursor-pointer text-sm"
-                  >
-                    <option value="">Select an option</option>
-                    {variant.options.map((option) => (
-                       <option key={option.id} value={option.name}>
-                         {option.name}
-                         {option.price && option.price > 0 && ` (+$${option.price.toFixed(2)})`}
-                       </option>
-                     ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          {product.variants?.map((variant: ProductVariant) => {
+            const selectedCount = getSelectedCount(variant.id);
+            const minRequired = variant.minSelectedModifiers || 0;
+            const maxAllowed = variant.maxSelectedModifiers || 1;
+            
+            return (
+              <div key={variant.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                     {variant.name}
+                     {variant.isRequired ? (
+                       <span className="text-red-500 ml-1">*</span>
+                     ) : (
+                       <span className="text-gray-500 ml-1">(Optional)</span>
+                     )}
+                  </h3>
+                  {variant.type === 'checklist' && (
+                    <span className="text-xs text-gray-500">
+                      {selectedCount}/{maxAllowed} selected
+                      {minRequired > 0 && ` (min: ${minRequired})`}
+                    </span>
+                  )}
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  {variant.options.map((option) => (
-                    <label key={option.id} className="flex items-center p-2 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={((selectedOptions.selectedVariants[variant.id] as string[]) || []).includes(option.name)}
-                        onChange={() => handleVariantChange(variant.id, option.name, true)}
-                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
-                      />
-                      <span className="flex-1 ml-2 text-gray-900 font-medium text-sm">{option.name}</span>
-                       {option.price && option.price > 0 && (
-                         <span className="text-green-700 font-semibold text-sm">
-                           +${option.price.toFixed(2)}
-                         </span>
-                       )}
+                
+                {variant.type === 'dropdown' ? (
+                  <div className="relative">
+                    <label htmlFor={`variant-${variant.id}`} className="sr-only">
+                      {variant.name} selection
                     </label>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+                    <select
+                      id={`variant-${variant.id}`}
+                      value={selectedOptions.selectedVariants[variant.id] || ''}
+                      onChange={(e) => handleVariantChange(variant.id, e.target.value, false)}
+                      className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none cursor-pointer text-sm"
+                    >
+                      <option value="">Select an option</option>
+                      {variant.options.map((option) => (
+                         <option key={option.id} value={option.name}>
+                           {option.name}
+                           {option.price && option.price > 0 && ` (+$${option.price.toFixed(2)})`}
+                         </option>
+                       ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {variant.options.map((option) => {
+                      const isSelected = ((selectedOptions.selectedVariants[variant.id] as string[]) || []).includes(option.name);
+                      const isMaxReached = selectedCount >= maxAllowed && !isSelected;
+                      
+                      return (
+                        <label key={option.id} className={`flex items-center p-2 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors ${
+                          isMaxReached ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            disabled={isMaxReached}
+                            onChange={() => handleVariantChange(variant.id, option.name, true)}
+                            className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 focus:ring-2 disabled:opacity-50"
+                          />
+                          <span className="flex-1 ml-2 text-gray-900 font-medium text-sm">{option.name}</span>
+                           {option.price && option.price > 0 && (
+                             <span className="text-green-700 font-semibold text-sm">
+                               +${option.price.toFixed(2)}
+                             </span>
+                           )}
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
           {/* Customer Note */}
           <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
