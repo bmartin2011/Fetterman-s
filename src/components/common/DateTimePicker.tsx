@@ -402,7 +402,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
       </div>
 
       {/* Time Selection */}
-      {tempSelectedDate && availableTimes.length > 0 && (
+      {tempSelectedDate && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
             <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
@@ -411,6 +411,47 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
             <span className="hidden sm:inline">Available time slots</span>
             <span className="sm:hidden">Pick time</span>
           </h3>
+          
+          {availableTimes.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="mb-4">
+                <Clock className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">
+                  No pickup times available
+                </h4>
+                <p className="text-gray-600 max-w-md mx-auto">
+                  {(() => {
+                    const date = new Date(tempSelectedDate);
+                    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+                    const hours = storeHours?.[dayName];
+                    const isToday = tempSelectedDate === new Date().toISOString().split('T')[0];
+                    
+                    if (!hours || hours.closed) {
+                      return `We're closed on ${date.toLocaleDateString('en-US', { weekday: 'long' })}s. Please select another day.`;
+                    }
+                    
+                    if (isToday) {
+                      return `No more pickup slots available today. We're open ${hours.open} - ${hours.close}. Try selecting tomorrow or another day.`;
+                    }
+                    
+                    return `No pickup slots available for this date. Please try another day.`;
+                  })()
+                  }
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  const tomorrow = new Date();
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  const tomorrowString = tomorrow.toISOString().split('T')[0];
+                  handleDateSelect(tomorrowString);
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+              >
+                Try Tomorrow
+              </button>
+            </div>
+          ) : (
           
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 max-h-60 sm:max-h-80 overflow-y-auto">
             {availableTimes.map((time) => {
@@ -442,6 +483,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
               );
             })}
           </div>
+          )}
         </div>
       )}
 
