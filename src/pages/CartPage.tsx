@@ -157,35 +157,45 @@ const CartPage: React.FC = () => {
                     <h4 className="text-lg font-medium text-gray-900 truncate">
                       {item.product.name}
                     </h4>
-                    {item.selectedVariants && Object.entries(item.selectedVariants).map(([variantId, selectedValue]) => {
-                      // Find the variant in the product to get its name
-                      const variant = item.product.variants?.find(v => v.id === variantId);
-                      if (!variant) return null;
-                      
-                      // Get the selected option labels
-                      const getOptionLabels = (value: string | string[]) => {
-                        if (Array.isArray(value)) {
-                          return value.map(val => {
-                            const option = variant.options.find(opt => opt.name === val);
-                            return option ? option.name : val;
-                          }).join(', ');
-                        } else {
-                          const option = variant.options.find(opt => opt.name === value);
-                          return option ? option.name : value;
-                        }
-                      };
-                      
-                      return (
-                        <p key={variantId} className="text-sm text-gray-600">
-                          {variant.name}: {getOptionLabels(selectedValue)}
-                        </p>
-                      );
-                    })}
-
-                    {item.specialInstructions && (
-                      <p className="text-sm text-gray-600">Note: {item.specialInstructions}</p>
+                    
+                    {/* Selections/Modifiers */}
+                    {item.selectedVariants && Object.keys(item.selectedVariants).length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {Object.entries(item.selectedVariants).map(([variantId, selectedValue]) => {
+                          const variant = item.product.variants?.find(v => v.id === variantId);
+                          if (!variant) return null;
+                          
+                          const getOptionLabels = (value: string | string[]) => {
+                            if (Array.isArray(value)) {
+                              return value.map(val => {
+                                const option = variant.options.find(opt => opt.name === val);
+                                return option ? option.name : val;
+                              }).join(', ');
+                            } else {
+                              const option = variant.options.find(opt => opt.name === value);
+                              return option ? option.name : value;
+                            }
+                          };
+                          
+                          return (
+                            <p key={variantId} className="text-sm text-gray-600">
+                              <span className="font-medium">{variant.name}:</span> {getOptionLabels(selectedValue)}
+                            </p>
+                          );
+                        })}
+                      </div>
                     )}
-                    <p className="text-lg font-bold text-gray-900 mt-1">
+
+                    {/* Special Instructions/Note */}
+                    {item.specialInstructions && (
+                      <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                        <p className="text-sm text-gray-700">
+                          <span className="font-medium text-yellow-800">Note:</span> {item.specialInstructions}
+                        </p>
+                      </div>
+                    )}
+                    
+                    <p className="text-lg font-bold text-gray-900 mt-2">
                       ${(item.totalPrice / item.quantity).toFixed(2)}
                     </p>
                   </div>
