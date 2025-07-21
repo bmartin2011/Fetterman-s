@@ -16,7 +16,11 @@ const createRateLimiter = () => {
     standardHeaders: true,
     legacyHeaders: false,
     // Skip rate limiting for health checks
-    skip: (req) => req.path === '/health'
+    skip: (req) => req.path === '/health',
+    // Disable trust proxy validation for Railway deployment
+    validate: {
+      trustProxy: false
+    }
   });
 };
 
