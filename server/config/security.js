@@ -55,7 +55,7 @@ const helmetConfig = {
 // CORS configuration
 const getCorsConfig = () => {
   const allowedOrigins = NODE_ENV === 'production' 
-    ? (process.env.ALLOWED_ORIGINS || 'https://your-production-domain.com').split(',')
+    ? (process.env.ALLOWED_ORIGINS || 'https://fetterman-s-production.up.railway.app').split(',')
     : ['http://localhost:3000', 'http://127.0.0.1:3000'];
 
   return {
