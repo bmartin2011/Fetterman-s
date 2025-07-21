@@ -352,35 +352,62 @@ app.post('/api/square/create-checkout', async (req, res) => {
     // Generate unique idempotency key
     const idempotencyKey = `checkout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-    // Calculate total amount from cart items
-    let totalAmount = items.reduce((total, item) => {
-      return total + (item.totalPrice || 0);
-    }, 0);
+    // First, create an order with line items
+    const lineItems = items.map(item => {
+      const lineItem = {
+        name: item.name,
+        quantity: item.quantity.toString(),
+        base_price_money: {
+          amount: Math.round((item.price || 0) * 100), // Convert to cents
+          currency: 'USD'
+        }
+      };
+      
+      // Add variations/modifiers if present
+      if (item.selectedVariants && Object.keys(item.selectedVariants).length > 0) {
+        const modifiers = [];
+        Object.entries(item.selectedVariants).forEach(([variantId, selection]) => {
+          if (Array.isArray(selection)) {
+            selection.forEach(option => {
+              modifiers.push({
+                name: option,
+                base_price_money: {
+                  amount: 0, // Modifier pricing can be added here if needed
+                  currency: 'USD'
+                }
+              });
+            });
+          } else if (selection) {
+            modifiers.push({
+              name: selection,
+              base_price_money: {
+                amount: 0, // Modifier pricing can be added here if needed
+                currency: 'USD'
+              }
+            });
+          }
+        });
+        
+        if (modifiers.length > 0) {
+          lineItem.modifiers = modifiers;
+        }
+      }
+      
+      // Add special instructions as note
+      if (item.specialInstructions) {
+        lineItem.note = item.specialInstructions;
+      }
+      
+      return lineItem;
+    });
     
-    // Apply discounts if any
-    if (appliedDiscounts && appliedDiscounts.length > 0) {
-      const totalDiscount = appliedDiscounts.reduce((total, discount) => {
-        return total + (discount.appliedAmount || 0);
-      }, 0);
-      totalAmount = Math.max(0, totalAmount - totalDiscount);
-
-    }
-    
-    // Ensure we have a valid total amount
-    if (!totalAmount || totalAmount <= 0) {
-      throw new Error('Invalid cart total amount');
-    }
-    
-    // Create checkout request for Square Online Checkout Payment Links API
+    // Create checkout session with order data
     const checkoutData = {
       idempotency_key: idempotencyKey,
-      quick_pay: {
-        name: 'Fetterman\'s Order',
-        price_money: {
-          amount: Math.round(totalAmount * 100), // Convert to cents
-          currency: 'USD'
-        },
-        location_id: pickupLocation?.id || process.env.REACT_APP_SQUARE_LOCATION_ID
+      order: {
+        location_id: pickupLocation?.id || process.env.REACT_APP_SQUARE_LOCATION_ID,
+        line_items: lineItems,
+        state: 'OPEN'
       },
       checkout_options: {
         ask_for_shipping_address: false,
