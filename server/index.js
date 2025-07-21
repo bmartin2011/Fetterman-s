@@ -404,6 +404,10 @@ app.post('/api/square/create-checkout', async (req, res) => {
       return lineItem;
     });
     
+    // For now, skip phone number pre-population due to Square's strict validation
+    // Users can enter their phone number directly in Square's checkout form
+    const formattedPhone = null; // Temporarily disable phone pre-population
+    
     // Create checkout session with order data
     const checkoutData = {
       idempotency_key: idempotencyKey,
@@ -419,7 +423,7 @@ app.post('/api/square/create-checkout', async (req, res) => {
       },
       pre_populated_data: {
         ...(customerInfo.email && { buyer_email: customerInfo.email }),
-        ...(customerInfo.phone && customerInfo.phone.trim() && { buyer_phone_number: customerInfo.phone.trim() })
+        ...(formattedPhone && { buyer_phone_number: formattedPhone })
       }
     };
     
