@@ -10,6 +10,9 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
+// Trust proxy for Railway deployment
+app.set('trust proxy', true);
+
 // Cache cleanup interval (every 10 minutes)
 setInterval(() => {
   const now = Date.now();
