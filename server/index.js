@@ -350,7 +350,7 @@ app.post('/api/square/payment', [
 // Create Square Checkout (redirect to Square hosted page)
 app.post('/api/square/create-checkout', async (req, res) => {
   try {
-    const { items, customerInfo, pickupLocation, appliedDiscounts } = req.body;
+    const { items, customer, pickupLocation, appliedDiscounts } = req.body;
     
     // Generate unique idempotency key
     const idempotencyKey = `checkout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -418,11 +418,11 @@ app.post('/api/square/create-checkout', async (req, res) => {
       },
       checkout_options: {
         ask_for_shipping_address: false,
-        merchant_support_email: customerInfo.email || 'support@fettermans.com',
+        merchant_support_email: customer?.email || 'support@fettermans.com',
         redirect_url: `${req.headers.origin || 'http://localhost:3000'}/checkout/success`
       },
       pre_populated_data: {
-        ...(customerInfo.email && { buyer_email: customerInfo.email }),
+        ...(customer?.email && { buyer_email: customer.email }),
         ...(formattedPhone && { buyer_phone_number: formattedPhone })
       }
     };
