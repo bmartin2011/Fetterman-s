@@ -1,10 +1,13 @@
 // Service Worker for caching strategies and offline support
 
-const CACHE_NAME = 'fettermans-v1';
-const STATIC_CACHE = 'static-v1';
-const DYNAMIC_CACHE = 'dynamic-v1';
-const IMAGE_CACHE = 'images-v1';
-const API_CACHE = 'api-v1';
+const CACHE_NAME = 'fettermans-v2'; // Updated version to force cache refresh
+const STATIC_CACHE = 'static-v2';
+const DYNAMIC_CACHE = 'dynamic-v2';
+const IMAGE_CACHE = 'images-v2';
+const API_CACHE = 'api-v2';
+
+// Check if we're in development mode
+const isDevelopment = self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
 
 // Assets to cache immediately
 const STATIC_ASSETS = [
@@ -50,7 +53,7 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
+  if (isDevelopment) {
     console.log('Service Worker: Activating...');
   }
   
@@ -59,22 +62,23 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== STATIC_CACHE && 
+            // In development, clear all caches to prevent stale data
+            if (isDevelopment || (cacheName !== STATIC_CACHE && 
                 cacheName !== DYNAMIC_CACHE && 
                 cacheName !== IMAGE_CACHE && 
-                cacheName !== API_CACHE) {
-              if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-          console.log('Service Worker: Deleting old cache', cacheName);
-        }
+                cacheName !== API_CACHE)) {
+              if (isDevelopment) {
+                console.log('Service Worker: Deleting cache', cacheName);
+              }
               return caches.delete(cacheName);
             }
           })
         );
       })
       .then(() => {
-        if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-      console.log('Service Worker: Activated');
-    }
+        if (isDevelopment) {
+          console.log('Service Worker: Activated and caches cleared');
+        }
         return self.clients.claim();
       })
   );
@@ -88,6 +92,11 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (request.method !== 'GET') {
     return;
+  }
+
+  // In development mode, skip caching for API requests to avoid serving stale data
+  if (isDevelopment && isAPIRequest(url)) {
+    return; // Let the request go through normally without caching
   }
 
   // Handle different types of requests with appropriate caching strategies

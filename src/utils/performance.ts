@@ -52,7 +52,9 @@ export const trackWebVitals = () => {
       getLCP(handleMetric);
       getTTFB(handleMetric);
     }).catch(() => {
-      console.warn('Web Vitals library not available');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Web Vitals library not available');
+      }
     });
   }
 };
@@ -144,8 +146,8 @@ export const trackBundleSize = () => {
       const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
       
       if (process.env.NODE_ENV === 'development') {
-         console.log(`📦 Bundle Load Time: ${loadTime}ms`);
-       }
+          console.log(`📦 Bundle Load Time: ${loadTime}ms`);
+        }
       
       // In production, send to analytics
       if (process.env.NODE_ENV === 'production') {

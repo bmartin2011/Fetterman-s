@@ -45,7 +45,9 @@ function App() {
         }, 500);
       } catch (error) {
         // Silently fail - this is just preloading
-        console.debug('Preloading failed:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.debug('Preloading failed:', error);
+        }
       }
     };
 

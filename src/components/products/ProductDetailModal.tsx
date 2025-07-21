@@ -360,7 +360,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
                       {variant.options.map((option) => (
                          <option key={option.id} value={option.name}>
                            {option.name}
-                           {option.price && option.price > 0 && ` (+$${option.price.toFixed(2)})`}
+                           {option.price && option.price > 0 && ` (+$${(option.price / 100).toFixed(2)})`}
                          </option>
                        ))}
                     </select>
@@ -386,9 +386,10 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
                           <span className="flex-1 ml-2 text-gray-900 font-medium text-sm">{option.name}</span>
                            {option.price && option.price > 0 && (
                              <span className="text-green-700 font-semibold text-sm">
-                               +${option.price.toFixed(2)}
+                               +${(option.price / 100).toFixed(2)}
                              </span>
                            )}
+
                         </label>
                       );
                     })}

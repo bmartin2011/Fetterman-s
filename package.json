@@ -28,14 +28,22 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "build:prod": "set GENERATE_SOURCEMAP=false && react-scripts build",
+    "build:prod": "cross-env GENERATE_SOURCEMAP=false react-scripts build",
     "build:analyze": "npm run build && npx serve -s build",
     "test": "react-scripts test",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "predeploy": "npm run lint && npm run type-check && npm run test:coverage",
+    "deploy:vercel": "npm run predeploy && npm run build:prod && vercel --prod",
+    "deploy:preview": "npm run build:prod && vercel",
+    "postbuild": "npm run analyze:bundle",
+    "analyze:bundle": "npx webpack-bundle-analyzer build/static/js/*.js --no-open",
+    "clean": "rm -rf build node_modules/.cache",
+    "security:audit": "npm audit --audit-level moderate",
+    "security:fix": "npm audit fix"
   },
   "browserslist": {
     "production": [
@@ -53,7 +61,9 @@
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "autoprefixer": "^10.4.21",
+    "cross-env": "^7.0.3",
     "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.0"
+    "tailwindcss": "^3.4.0",
+    "webpack-bundle-analyzer": "^4.10.1"
   }
 }

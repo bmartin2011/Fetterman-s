@@ -1,5 +1,5 @@
 import { CartItem, StoreLocation, Product, Category, ProductVariant, OrderStatus, Discount, AppliedDiscount, DiscountValidationResult, DiscountType, SquareMeasurementUnit, MeasurementUnit } from '../types';
-import { apiCache, cached, createCacheKey } from '../utils/cache';
+import { apiCache, createCacheKey } from '../utils/cache';
 import { trackApiCall } from '../utils/performance';
 
 export interface SquareCheckoutData {
@@ -54,7 +54,7 @@ export class SquareService {
   // Enhanced caching with performance monitoring
   private readonly CACHE_TTL = {
     locations: 30 * 60 * 1000, // 30 minutes
-    products: 30 * 60 * 1000,  // 30 minutes (increased for better performance)
+    products: 2 * 60 * 1000,   // 2 minutes (reduced for faster updates when items are archived)
     categories: 60 * 60 * 1000, // 60 minutes (categories change less frequently)
     discounts: 15 * 60 * 1000,  // 15 minutes
     modifiers: 30 * 60 * 1000   // 30 minutes
@@ -886,8 +886,30 @@ export class SquareService {
 
 
   // Fetch products from Square Catalog API
-  async getProducts(): Promise<Product[]> {
+  // Method to clear products cache - useful when API structure changes
+  clearProductsCache(): void {
     const cacheKey = createCacheKey('products');
+    apiCache.delete(cacheKey);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Products cache cleared');
+    }
+  }
+
+  // Method to refresh products cache immediately
+  async refreshProducts(): Promise<Product[]> {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Refreshing products cache...');
+    }
+    return this.getProducts(true);
+  }
+
+  async getProducts(forceRefresh: boolean = false): Promise<Product[]> {
+    const cacheKey = createCacheKey('products');
+    
+    // Clear cache if force refresh is requested
+    if (forceRefresh) {
+      apiCache.delete(cacheKey);
+    }
     
     // Check cache first
     const cachedProducts = apiCache.get(cacheKey) as Product[] | null;
@@ -1007,6 +1029,11 @@ export class SquareService {
             const nutritionalInfo: Record<string, any> = {};
             let preparationTime: number | undefined;
 
+            // Skip archived items - double check since we want to ensure no archived items show up
+            if (itemData.is_archived === true) {
+              continue;
+            }
+
             const product: Product = {
                id: item.id,
                name: itemData.name || 'Unnamed Product',
@@ -1023,7 +1050,7 @@ export class SquareService {
                specifications: {},
                variants: allVariants,
                ingredients: ingredients,
-               isActive: !itemData.is_deleted,
+               isActive: !itemData.is_deleted && !itemData.is_archived, // Check both deleted and archived status
                createdAt: item.created_at || new Date().toISOString(),
                updatedAt: item.updated_at || new Date().toISOString(),
                // Enhanced Square-specific fields
@@ -1568,8 +1595,26 @@ export class SquareService {
 
 export const squareService = new SquareService();
 
-// Global function for debugging - clear cache from browser console
+// Global functions for debugging - clear cache from browser console
 (window as any).clearSquareCache = () => {
   squareService.clearCache();
-  
+  if (process.env.NODE_ENV === 'development') {
+    console.log('All Square cache cleared');
+  }
+};
+
+(window as any).refreshProducts = async () => {
+  try {
+    const products = await squareService.refreshProducts();
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Products refreshed: ${products.length} products loaded`);
+    }
+    return products;
+  } catch (error) {
+    console.error('Failed to refresh products:', error);
+  }
+};
+
+(window as any).clearProductsCache = () => {
+  squareService.clearProductsCache();
 };

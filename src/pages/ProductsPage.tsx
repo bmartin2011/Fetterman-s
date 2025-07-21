@@ -32,7 +32,10 @@ const ProductsPage: React.FC = () => {
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
   const [showCategoryModal, setShowCategoryModal] = useState(false);
 
+
   useEffect(() => {
+    // Clear products cache to ensure we get fresh data with archived items filtered
+    squareService.clearProductsCache();
     fetchData();
   }, []);
 
@@ -94,13 +97,18 @@ const ProductsPage: React.FC = () => {
     }
   }, []);
 
+
+
   useEffect(() => {
     let filtered = products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            product.description.toLowerCase().includes(searchTerm.toLowerCase());
       
-      // Only filter by search, not by category (categories are shown as sections)
-      return matchesSearch;
+      // Filter out archived/inactive products
+      const isActive = product.isActive !== false; // Default to true if undefined
+      
+      // Only filter by search and active status, not by category (categories are shown as sections)
+      return matchesSearch && isActive;
     });
 
     // Sort products
@@ -128,49 +136,7 @@ const ProductsPage: React.FC = () => {
     setShowCustomizationModal(true);
   };
 
-  // Memoized hierarchical category structure
-  const buildCategoryHierarchy = useCallback((categories: Category[]): Category[] => {
-    const categoryMap = new Map<string, Category>();
-    const rootCategories: Category[] = [];
-
-    // First pass: create map and initialize subcategories arrays
-    categories.forEach(category => {
-      if (category.isActive) {
-        categoryMap.set(category.id, { ...category, subcategories: [] });
-      }
-    });
-
-    // Second pass: build hierarchy
-    categoryMap.forEach(category => {
-      if (category.parentId && categoryMap.has(category.parentId)) {
-        const parent = categoryMap.get(category.parentId)!;
-        parent.subcategories!.push(category);
-      } else {
-        rootCategories.push(category);
-      }
-    });
-
-    return rootCategories.sort((a, b) => a.sortOrder - b.sortOrder);
-  }, []);
-
-  // Get all active categories (including parent categories and their subcategories)
-  const getAllActiveCategories = useCallback((categories: Category[]): Category[] => {
-    const allCategories: Category[] = [];
-    
-    const addCategoryAndSubcategories = (category: Category) => {
-      if (category.isActive) {
-        allCategories.push(category);
-        if (category.subcategories) {
-          category.subcategories.forEach(addCategoryAndSubcategories);
-        }
-      }
-    };
-    
-    categories.forEach(addCategoryAndSubcategories);
-    return allCategories;
-  }, []);
-  
-  const activeCategories = getAllActiveCategories(categories);
+  // Note: Category hierarchy and active categories are handled through parentCategories and productsByCategory
   
   // Get only parent categories (level 0) for navigation
   const parentCategories = useMemo(() => {
@@ -500,25 +466,28 @@ const ProductsPage: React.FC = () => {
 
         {/* Search Bar */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="relative max-w-md">
-            <Search 
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 w-5 h-5 cursor-pointer transition-colors" 
-              onClick={() => {
-                const searchInput = document.querySelector('input[aria-label="Search menu items"]') as HTMLInputElement;
-                if (searchInput) {
-                  searchInput.focus();
-                }
-              }}
-              aria-label="Focus search input"
-            />
-            <input
-              type="text"
-              placeholder="Search in menu"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              aria-label="Search menu items"
-            />
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search 
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 w-5 h-5 cursor-pointer transition-colors" 
+                onClick={() => {
+                  const searchInput = document.querySelector('input[aria-label="Search menu items"]') as HTMLInputElement;
+                  if (searchInput) {
+                    searchInput.focus();
+                  }
+                }}
+                aria-label="Focus search input"
+              />
+              <input
+                type="text"
+                placeholder="Search in menu"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                aria-label="Search menu items"
+              />
+            </div>
+
           </div>
         </div>
 

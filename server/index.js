@@ -173,15 +173,12 @@ app.get('/api/square/locations', async (req, res) => {
 // Get Square products
 app.post('/api/square/products', async (req, res) => {
   try {
-    // Use catalog/search endpoint to get full item objects with custom attribute values
-    // This endpoint returns complete objects in the 'objects' array
+    // Use SearchCatalogItems which supports archived_state_filter
     const requestBody = {
-      object_types: ['ITEM'],
-      include_deleted_objects: false,
-      include_related_objects: true
+      archived_state_filter: 'ARCHIVED_STATE_NOT_ARCHIVED'
     };
     
-    const data = await makeSquareRequest('/catalog/search', {
+    const data = await makeSquareRequest('/catalog/search-catalog-items', {
       method: 'POST',
       body: JSON.stringify(requestBody)
     });
@@ -198,6 +195,7 @@ app.post('/api/square/categories', async (req, res) => {
   try {
     // Use catalog/search endpoint for categories - fetch ALL categories to see hierarchy
     // Removed category_type filter to see all category types including parent/child relationships
+    // Filter out deleted categories (archived filtering handled by include_deleted_objects)
     const requestBody = {
       object_types: ['CATEGORY'],
       include_deleted_objects: false,
@@ -220,6 +218,7 @@ app.post('/api/square/categories', async (req, res) => {
 app.post('/api/square/modifiers', async (req, res) => {
   try {
     // Use catalog/search endpoint for modifier lists
+    // Filter out deleted modifiers (archived filtering handled by include_deleted_objects)
     const requestBody = {
       object_types: ['MODIFIER_LIST'],
       include_deleted_objects: false,
@@ -242,6 +241,7 @@ app.post('/api/square/modifiers', async (req, res) => {
 app.post('/api/square/discounts', async (req, res) => {
   try {
     // Use catalog/search endpoint for discounts
+    // Filter out deleted discounts (archived filtering handled by include_deleted_objects)
     const requestBody = {
       object_types: ['DISCOUNT'],
       include_deleted_objects: false,
@@ -270,6 +270,7 @@ app.post('/api/square/discounts', async (req, res) => {
 app.post('/api/square/measurement-units', async (req, res) => {
   try {
     // Use catalog/search endpoint for measurement units
+    // Filter out deleted measurement units (archived filtering handled by include_deleted_objects)
     const requestBody = {
       object_types: ['MEASUREMENT_UNIT'],
       include_deleted_objects: false,
@@ -350,18 +351,24 @@ app.post('/api/square/payment', [
 // Create Square Checkout (redirect to Square hosted page)
 app.post('/api/square/create-checkout', async (req, res) => {
   try {
-    const { items, customer, pickupLocation, appliedDiscounts } = req.body;
+    const { items, customerInfo, pickupLocation, appliedDiscounts, pickupDate, pickupTime } = req.body;
+    // Handle both customer and customerInfo for backward compatibility
+    const customer = customerInfo || req.body.customer;
     
     // Generate unique idempotency key
     const idempotencyKey = `checkout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-    // First, create an order with line items
+    // Build line items for the order
     const lineItems = items.map(item => {
+      // Handle CartItem structure: item has product object and totalPrice
+      const itemName = item.product?.name || item.name || 'Item';
+      const itemPrice = item.totalPrice || item.product?.price || item.price || 0;
+      
       const lineItem = {
-        name: item.name,
+        name: itemName,
         quantity: item.quantity.toString(),
         base_price_money: {
-          amount: Math.round((item.price || 0) * 100), // Convert to cents
+          amount: Math.round(itemPrice * 100), // Convert to cents
           currency: 'USD'
         }
       };
@@ -404,17 +411,42 @@ app.post('/api/square/create-checkout', async (req, res) => {
       return lineItem;
     });
     
-    // For now, skip phone number pre-population due to Square's strict validation
-    // Users can enter their phone number directly in Square's checkout form
-    const formattedPhone = null; // Temporarily disable phone pre-population
+    // Add discounts to the order if present
+    const orderDiscounts = [];
+    if (appliedDiscounts && appliedDiscounts.length > 0) {
+      appliedDiscounts.forEach(discount => {
+        orderDiscounts.push({
+          name: discount.name,
+          percentage: discount.type === 'percentage' ? discount.value.toString() : undefined,
+          amount_money: discount.type === 'fixed_amount' ? {
+            amount: Math.round(discount.appliedAmount * 100), // Convert to cents
+            currency: 'USD'
+          } : undefined,
+          scope: 'ORDER'
+        });
+      });
+    }
     
-    // Create checkout session with order data
+    // Create checkout with order data directly (order-based checkout)
     const checkoutData = {
       idempotency_key: idempotencyKey,
       order: {
         location_id: pickupLocation?.id || process.env.REACT_APP_SQUARE_LOCATION_ID,
         line_items: lineItems,
-        state: 'OPEN'
+        ...(orderDiscounts.length > 0 && { discounts: orderDiscounts }),
+        fulfillments: [{
+          type: 'PICKUP',
+          state: 'PROPOSED',
+          pickup_details: {
+            recipient: {
+              display_name: customer?.name || 'Customer'
+            },
+            pickup_at: pickupDate && pickupTime 
+              ? new Date(`${pickupDate}T${pickupTime}`).toISOString()
+              : new Date(Date.now() + 30 * 60 * 1000).toISOString(), // Default to 30 minutes from now
+            note: 'Order placed via online checkout'
+          }
+        }]
       },
       checkout_options: {
         ask_for_shipping_address: false,
@@ -422,15 +454,18 @@ app.post('/api/square/create-checkout', async (req, res) => {
         redirect_url: `${req.headers.origin || 'http://localhost:3000'}/checkout/success`
       },
       pre_populated_data: {
-        ...(customer?.email && { buyer_email: customer.email }),
-        ...(formattedPhone && { buyer_phone_number: formattedPhone })
+        ...(customer?.email && { buyer_email: customer.email })
       }
     };
+    
+    console.log('Creating checkout with data:', JSON.stringify(checkoutData, null, 2));
     
     const data = await makeSquareRequest('/online-checkout/payment-links', {
       method: 'POST',
       body: JSON.stringify(checkoutData)
     });
+    
+    console.log('Checkout response:', JSON.stringify(data, null, 2));
     
     // Return the checkout URL
     res.json({
@@ -439,6 +474,7 @@ app.post('/api/square/create-checkout', async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating checkout:', error);
+    console.error('Error details:', error.response?.data || error.message);
     res.status(500).json({ error: error.message });
   }
 });
@@ -461,6 +497,7 @@ app.use((error, req, res, next) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Square proxy server running on port ${PORT}`);
+  console.log(`Server started at ${new Date().toISOString()}`);
   if (process.env.NODE_ENV === 'development') {
     console.log(`Environment: ${SQUARE_ENVIRONMENT}`);
     console.log(`Square Base URL: ${SQUARE_BASE_URL}`);

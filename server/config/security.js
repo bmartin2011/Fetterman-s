@@ -60,7 +60,7 @@ const helmetConfig = {
 const getCorsConfig = () => {
   const allowedOrigins = NODE_ENV === 'production' 
     ? (process.env.ALLOWED_ORIGINS || 'https://fetterman-s-production.up.railway.app').split(',')
-    : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+    : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3002', 'http://127.0.0.1:3002'];
 
   return {
     origin: (origin, callback) => {

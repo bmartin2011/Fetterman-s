@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Clock, X } from 'lucide-react';
 import { StoreLocation } from '../../types';
-import { SquareService } from '../../services/squareService';
+import { squareService } from '../../services/squareService';
 
 interface DateTimePickerProps {
   selectedDate?: string;
@@ -41,7 +41,6 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
       if (selectedLocation && !propStoreHours) {
         setIsLoading(true);
         try {
-          const squareService = new SquareService();
           const locations = await squareService.getSquareLocations();
           const location = locations.find((loc: StoreLocation) => loc.id === selectedLocation.id);
           if (location && location.hours) {
@@ -62,17 +61,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     fetchStoreHours();
   }, [selectedLocation, propStoreHours]);
 
-  // Generate available dates (next 14 days)
-  useEffect(() => {
-    const dates: string[] = [];
-    const today = new Date();
-    
-    for (let i = 0; i < 14; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      dates.push(date.toISOString().split('T')[0]);
-    }
-  }, []);
+  // Note: Available dates are generated dynamically in getWeekDates function
 
   // Generate available times based on selected date
   useEffect(() => {
@@ -112,17 +101,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     const now = new Date();
     const isToday = tempSelectedDate === now.toISOString().split('T')[0];
     
-    // Debug logging
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Generating times for:', {
-        date: tempSelectedDate,
-        dayName,
-        hours,
-        isToday,
-        openTime,
-        closeTime
-      });
-    }
+
     
     // Generate 15-minute intervals within store hours
     for (let time = openTime; time < closeTime; time += 15) {
@@ -144,10 +123,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
       }
     }
     
-    // Debug logging
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Generated times:', times);
-    }
+
     
     setAvailableTimes(times);
   }, [tempSelectedDate, storeHours]);
@@ -202,9 +178,6 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
   const handleTimeSelect = (time: string) => {
     setTempSelectedTime(time);
-    if (tempSelectedDate) {
-      onDateTimeSelect(tempSelectedDate, time);
-    }
   };
 
   const handleConfirm = () => {
