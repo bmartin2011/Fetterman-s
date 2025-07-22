@@ -64,13 +64,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Handle CORS preflight requests
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.sendStatus(200);
-});
+// CORS preflight requests are handled by the cors middleware above
 
 // Square API configuration
 const SQUARE_ACCESS_TOKEN = process.env.REACT_APP_SQUARE_ACCESS_TOKEN;
@@ -148,7 +142,7 @@ async function makeSquareRequest(endpoint, options = {}) {
 
 // Routes
 
-// Health check endpoint
+// Basic health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
@@ -157,6 +151,92 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     version: '1.0.0'
   });
+});
+
+// Detailed health check endpoint for production monitoring
+app.get('/api/health/detailed', async (req, res) => {
+  const health = {
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    version: process.env.npm_package_version || '1.0.0',
+    services: {
+      square: 'unknown',
+      cache: 'unknown',
+      memory: 'unknown'
+    },
+    metrics: {
+      cacheSize: apiCache.size,
+      memoryUsage: process.memoryUsage(),
+      nodeVersion: process.version
+    }
+  };
+
+  // Test Square API connectivity
+  try {
+    const testResponse = await makeSquareRequest('/locations', { method: 'GET' });
+    if (testResponse && testResponse.locations) {
+      health.services.square = 'healthy';
+    } else {
+      health.services.square = 'degraded';
+      health.status = 'DEGRADED';
+    }
+  } catch (error) {
+    health.services.square = 'unhealthy';
+    health.status = 'DEGRADED';
+    health.services.squareError = error.message;
+  }
+
+  // Check cache health
+  try {
+    const testKey = 'health_check_test';
+    apiCache.set(testKey, { test: true }, 1000);
+    const testValue = apiCache.get(testKey);
+    if (testValue && testValue.test) {
+      health.services.cache = 'healthy';
+      apiCache.delete(testKey);
+    } else {
+      health.services.cache = 'degraded';
+    }
+  } catch (error) {
+    health.services.cache = 'unhealthy';
+    health.status = 'DEGRADED';
+  }
+
+  // Check memory usage
+  const memUsage = process.memoryUsage();
+  const memUsageMB = memUsage.heapUsed / 1024 / 1024;
+  if (memUsageMB > 500) { // Alert if using more than 500MB
+    health.services.memory = 'high_usage';
+    health.status = 'DEGRADED';
+  } else {
+    health.services.memory = 'healthy';
+  }
+
+  // Set appropriate HTTP status
+  const statusCode = health.status === 'OK' ? 200 : 503;
+  res.status(statusCode).json(health);
+});
+
+// Environment configuration check endpoint
+app.get('/api/health/config', (req, res) => {
+  const config = {
+    environment: process.env.NODE_ENV || 'development',
+    squareEnvironment: SQUARE_ENVIRONMENT,
+    hasSquareToken: !!SQUARE_ACCESS_TOKEN,
+    squareTokenLength: SQUARE_ACCESS_TOKEN ? SQUARE_ACCESS_TOKEN.length : 0,
+    port: PORT,
+    nodeVersion: process.version,
+    timestamp: new Date().toISOString()
+  };
+
+  // Don't expose sensitive information in production
+  if (process.env.NODE_ENV === 'production') {
+    delete config.squareTokenLength;
+  }
+
+  res.json(config);
 });
 
 // Get Square locations
@@ -173,15 +253,48 @@ app.get('/api/square/locations', async (req, res) => {
 // Get Square products
 app.post('/api/square/products', async (req, res) => {
   try {
-    // Use SearchCatalogItems which supports archived_state_filter
+    // Remove location filtering from API call - fetch all products once
+    // Location filtering will be handled client-side using Square's built-in location fields
     const requestBody = {
-      archived_state_filter: 'ARCHIVED_STATE_NOT_ARCHIVED'
+      object_types: ['ITEM'],
+      include_deleted_objects: false,
+      include_related_objects: true
+      // Removed: enabled_location_ids - no longer filtering by location at API level
     };
     
-    const data = await makeSquareRequest('/catalog/search-catalog-items', {
+    console.log('Fetching products with request body:', JSON.stringify(requestBody, null, 2));
+    
+    const data = await makeSquareRequest('/catalog/search', {
       method: 'POST',
       body: JSON.stringify(requestBody)
     });
+    
+    // Additional filtering for archived items (Square API should handle this with include_deleted_objects: false)
+    // But we'll keep this as a safety net
+    if (data.objects) {
+      const originalCount = data.objects.length;
+      
+      data.objects = data.objects.filter(item => {
+        if (item.type !== 'ITEM' || !item.item_data) {
+          return true; // Keep non-item objects
+        }
+        
+        const itemData = item.item_data;
+        
+        // Skip archived items as additional safety check
+        if (itemData.is_archived === true) {
+          console.log(`Filtering out archived item: ${itemData.name}`);
+          return false;
+        }
+        
+        return true;
+      });
+      
+      const filteredCount = data.objects.length;
+      console.log(`Products fetched: ${originalCount}, after filtering: ${filteredCount}`);
+      console.log('All products fetched - location filtering will be handled client-side');
+    }
+    
     res.json(data);
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -355,6 +468,13 @@ app.post('/api/square/create-checkout', async (req, res) => {
     // Handle both customer and customerInfo for backward compatibility
     const customer = customerInfo || req.body.customer;
     
+    // Validate required pickup date and time
+    if (!pickupDate || !pickupTime) {
+      return res.status(400).json({ 
+        error: 'Pickup date and time are required. Please select a pickup time before proceeding.' 
+      });
+    }
+    
     // Generate unique idempotency key
     const idempotencyKey = `checkout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
@@ -432,6 +552,9 @@ app.post('/api/square/create-checkout', async (req, res) => {
       idempotency_key: idempotencyKey,
       order: {
         location_id: pickupLocation?.id || process.env.REACT_APP_SQUARE_LOCATION_ID,
+        pricing_options: {
+          auto_apply_taxes: true
+        },
         line_items: lineItems,
         ...(orderDiscounts.length > 0 && { discounts: orderDiscounts }),
         fulfillments: [{
@@ -441,9 +564,7 @@ app.post('/api/square/create-checkout', async (req, res) => {
             recipient: {
               display_name: customer?.name || 'Customer'
             },
-            pickup_at: pickupDate && pickupTime 
-              ? new Date(`${pickupDate}T${pickupTime}`).toISOString()
-              : new Date(Date.now() + 30 * 60 * 1000).toISOString(), // Default to 30 minutes from now
+            pickup_at: new Date(`${pickupDate}T${pickupTime}`).toISOString(),
             note: 'Order placed via online checkout'
           }
         }]
@@ -496,10 +617,7 @@ app.use((error, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Square proxy server running on port ${PORT}`);
-  console.log(`Server started at ${new Date().toISOString()}`);
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Environment: ${SQUARE_ENVIRONMENT}`);
-    console.log(`Square Base URL: ${SQUARE_BASE_URL}`);
-  }
+  // Square proxy server running on port
+  // Server started
+  // Development environment info logged
 });

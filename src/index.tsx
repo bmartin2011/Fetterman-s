@@ -25,7 +25,7 @@ root.render(
 // Enhanced performance monitoring
 reportWebVitals((metric) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('📊 Web Vital:', metric);
+    // Web vital metric recorded
   }
   // In production, send to analytics service
   // Example: analytics.track('web_vital', metric);

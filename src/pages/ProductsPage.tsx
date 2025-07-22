@@ -5,6 +5,7 @@ import LocationSelector from '../components/common/LocationSelector';
 import ProductDetailModal from '../components/products/ProductDetailModal';
 import ScrollToTop from '../components/common/ScrollToTop';
 import SkeletonLoader from '../components/SkeletonLoader';
+import ImageDebugger from '../components/debug/ImageDebugger';
 import { Product, Category } from '../types';
 import { useCart } from '../contexts/CartContext';
 import toast from 'react-hot-toast';
@@ -33,29 +34,28 @@ const ProductsPage: React.FC = () => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
 
 
-  useEffect(() => {
-    // Clear products cache to ensure we get fresh data with archived items filtered
-    squareService.clearProductsCache();
-    fetchData();
-  }, []);
-
   // Cache for expensive computations
   const [dataCache, setDataCache] = useState<{
     products?: Product[];
     categories?: Category[];
     timestamp?: number;
+    locationId?: string;
   }>({});
 
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (locationId?: string) => {
     try {
       setLoading(true);
+      
+      // Create location-aware cache key
+      const cacheKey = `${locationId || 'all_locations'}`;
       
       // Check cache first
       const now = Date.now();
       if (dataCache.products && dataCache.categories && dataCache.timestamp && 
-          (now - dataCache.timestamp) < CACHE_DURATION) {
+          (now - dataCache.timestamp) < CACHE_DURATION && 
+          dataCache.locationId === cacheKey) {
         setProducts(dataCache.products);
         setFilteredProducts(dataCache.products);
         setCategories(dataCache.categories);
@@ -72,22 +72,23 @@ const ProductsPage: React.FC = () => {
       setCategories(categoriesData);
       setCategoriesLoading(false);
       
-      // Then fetch products with a slight delay to prevent overwhelming the API
-      const productsData = await squareService.getProducts();
+      // Then fetch products with location ID
+      const productsData = await squareService.getProducts(false, locationId);
       setProducts(productsData);
       setFilteredProducts(productsData);
       setProductsLoading(false);
       
-      // Update cache
+      // Update cache with location info
       setDataCache({
         products: productsData,
         categories: categoriesData,
-        timestamp: now
+        timestamp: now,
+        locationId: cacheKey
       });
       
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching data:', error);
+        // Error fetching data
       }
       toast.error('Failed to load menu data. Please try again.');
       setProductsLoading(false);
@@ -95,21 +96,54 @@ const ProductsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [dataCache]);
+
+  useEffect(() => {
+    // Check for clearCache URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldClearCache = urlParams.get('clearCache') === 'true';
+    
+    if (shouldClearCache) {
+      // Clear all caches when explicitly requested
+      squareService.clearCache();
+      // Remove the parameter from URL to prevent repeated clearing
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      // Clear products cache to ensure we get fresh data with archived items filtered
+      squareService.clearProductsCache();
+    }
+    
+    fetchData(selectedLocation?.id);
+  }, [fetchData, selectedLocation]);
+
+  // Watch for location changes and refresh products
+  useEffect(() => {
+    if (selectedLocation) {
+      // No need to clear cache when location changes - client-side filtering handles this
+      fetchData(selectedLocation.id);
+    }
+  }, [selectedLocation?.id, fetchData]);
 
 
 
   useEffect(() => {
+    // Filtering products for search and sort
+    
     let filtered = products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            product.description.toLowerCase().includes(searchTerm.toLowerCase());
       
-      // Filter out archived/inactive products
-      const isActive = product.isActive !== false; // Default to true if undefined
+      // Filter out archived/inactive products - be more explicit about the check
+      const isActive = product.isActive === true; // Only include explicitly active products
       
-      // Only filter by search and active status, not by category (categories are shown as sections)
-      return matchesSearch && isActive;
+      const shouldInclude = matchesSearch && isActive;
+      
+      // Product filtering logic
+      
+      return shouldInclude;
     });
+
+    // Filtered products ready for display
 
     // Sort products
     filtered.sort((a, b) => {
@@ -160,7 +194,7 @@ const ProductsPage: React.FC = () => {
     return subcategoryIds;
   }, []);
 
-  // Enhanced products by category - uses parent categories for navigation
+  // Simplified products by category - more robust filtering
   const productsByCategory = useMemo(() => {
     if (!parentCategories.length || !filteredProducts.length) {
       return {};
@@ -172,23 +206,31 @@ const ProductsPage: React.FC = () => {
       // Get all subcategory IDs for this parent category
       const allCategoryIds = getAllSubcategoryIds(category);
       
-      // Enhanced category matching - check multiple ways products can be associated
+      // Simplified category matching - check the most reliable ways
       const categoryProducts = filteredProducts.filter(product => {
-        // Check if product belongs to this category or any of its subcategories
-        if (allCategoryIds.includes(product.categoryId || '')) return true;
+        // Primary check: product belongs to this category or any of its subcategories
+        if (product.categoryId && allCategoryIds.includes(product.categoryId)) {
+          return true;
+        }
         
-        // Multiple category IDs match
-        if (product.categoryIds && product.categoryIds.some(id => allCategoryIds.includes(id))) return true;
+        // Secondary check: multiple category IDs match
+        if (product.categoryIds && Array.isArray(product.categoryIds)) {
+          return product.categoryIds.some(id => allCategoryIds.includes(id));
+        }
         
-        // Category name match (case insensitive) - check parent and subcategories
-        if (product.category) {
-          const productCategoryLower = product.category.toLowerCase();
-          if (productCategoryLower === category.name.toLowerCase()) return true;
+        // Fallback: category name match (case insensitive)
+        if (product.category && typeof product.category === 'string') {
+          const productCategoryLower = product.category.toLowerCase().trim();
+          const categoryNameLower = category.name.toLowerCase().trim();
           
-          // Check subcategory names
-          if (category.subcategories) {
+          if (productCategoryLower === categoryNameLower) {
+            return true;
+          }
+          
+          // Check subcategory names if they exist
+          if (category.subcategories && Array.isArray(category.subcategories)) {
             return category.subcategories.some(subcategory => 
-              productCategoryLower === subcategory.name.toLowerCase()
+              productCategoryLower === subcategory.name.toLowerCase().trim()
             );
           }
         }
@@ -196,7 +238,7 @@ const ProductsPage: React.FC = () => {
         return false;
       });
       
-      // Only include parent categories that have products (directly or through subcategories)
+      // Only include categories that have products
       if (categoryProducts.length > 0) {
         result[category.id] = {
           category,
@@ -532,7 +574,12 @@ const ProductsPage: React.FC = () => {
           </div>
         </div>
 
-
+        {/* Image Debugger - Development Only */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mb-8">
+            <ImageDebugger products={filteredProducts} />
+          </div>
+        )}
 
         {/* Category Sections - With subcategory organization */}
         {Object.entries(productsByCategory).map(([categoryId, { category, products }]) => {

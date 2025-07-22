@@ -157,6 +157,10 @@ export interface Product {
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
+  
+  // Square location fields for client-side filtering
+  present_at_all_locations?: boolean;
+  present_at_location_ids?: string[];
 }
 
 // Enhanced Cart Item with unified variant-based customizations
@@ -187,26 +191,7 @@ export interface OrderItem {
   totalPrice: number;
 }
 
-// Admin Dashboard Stats
-export interface DashboardStats {
-  totalOrders: number;
-  totalRevenue: number;
-  totalProducts: number;
-  totalCategories: number;
-  todayOrders: number;
-  todayRevenue: number;
-  popularProducts: {
-    id: string;
-    name: string;
-    orderCount: number;
-    revenue: number;
-  }[];
-  recentOrders: Order[];
-  monthlyGrowth: {
-    orders: number;
-    revenue: number;
-  };
-}
+// DashboardStats interface removed as requested
 
 // Location Selection
 export interface StoreLocation {
@@ -376,36 +361,7 @@ export interface CartContextType {
   getEstimatedPickupTime: () => Date | null;
 }
 
-// Admin Management Types - simplified to focus on categories and variants
-export interface AdminContextType {
-  categories: Category[];
-  loading: boolean;
-  error: string | null;
-  
-  // Category management
-  addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
-  updateCategory: (id: string, category: Partial<Category>) => Promise<void>;
-  deleteCategory: (id: string) => Promise<void>;
-  
-  // Data fetching
-  fetchCategories: () => Promise<void>;
-}
-
-// Global Variant Management (for admin)
-export interface VariantOption {
-  id: string;
-  name: string;
-  price?: number;
-}
-
-export interface Variant {
-  id: string;
-  name: string;
-  type: 'dropdown' | 'checklist';
-  options: VariantOption[];
-  createdAt: string;
-  updatedAt: string;
-}
+// Admin-related types removed as requested
 
 // Old ProductVariant interface removed - now using the new ProductVariant interface defined earlier
 

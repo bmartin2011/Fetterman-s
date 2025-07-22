@@ -26,6 +26,14 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
   const [tempSelectedDate, setTempSelectedDate] = useState<string | null>(selectedDate || null);
   const [tempSelectedTime, setTempSelectedTime] = useState<string | null>(selectedTime || null);
 
+  // Helper function to get local date string (YYYY-MM-DD)
+  const getLocalDateString = (date: Date = new Date()) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Initialize current week to start from today
   useEffect(() => {
     const today = new Date();
@@ -48,7 +56,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
           }
         } catch (error) {
           if (process.env.NODE_ENV === 'development') {
-            console.error('Error fetching store hours:', error);
+            // Error fetching store hours
           }
         } finally {
           setIsLoading(false);
@@ -99,7 +107,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     const closeTime = closeHour * 60 + closeMinute;
     
     const now = new Date();
-    const isToday = tempSelectedDate === now.toISOString().split('T')[0];
+    const isToday = tempSelectedDate === getLocalDateString(now);
     
 
     
@@ -109,12 +117,12 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
       const minute = time % 60;
       const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
       
-      // For today, skip times that are too soon (need at least 30 minutes preparation time)
+      // For today, only skip times that have already passed
       if (isToday) {
         const selectedDateTime = new Date(tempSelectedDate + 'T' + timeString);
         const timeDiff = selectedDateTime.getTime() - now.getTime();
         
-        if (timeDiff >= 30 * 60 * 1000) { // 30 minutes minimum
+        if (timeDiff >= 0) { // Allow immediate pickup
           times.push(timeString);
         }
       } else {
@@ -134,9 +142,9 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
     
-    if (dateString === today.toISOString().split('T')[0]) {
+    if (dateString === getLocalDateString(today)) {
       return 'Today';
-    } else if (dateString === tomorrow.toISOString().split('T')[0]) {
+    } else if (dateString === getLocalDateString(tomorrow)) {
       return 'Tomorrow';
     } else {
       return date.toLocaleDateString('en-US', { 
@@ -163,7 +171,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     for (let i = 0; i < 7; i++) {
       const date = new Date(start);
       date.setDate(start.getDate() + i);
-      const dateString = date.toISOString().split('T')[0];
+      const dateString = getLocalDateString(date);
       dates.push(dateString);
     }
     
@@ -322,8 +330,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
             const hours = storeHours?.[dayName];
             const isClosed = !hours || hours.closed;
             const isSelected = tempSelectedDate === date;
-            const isToday = date === new Date().toISOString().split('T')[0];
-            const isPast = new Date(date) < new Date(new Date().toISOString().split('T')[0]);
+            const isToday = date === getLocalDateString();
+            const isPast = new Date(date) < new Date(getLocalDateString());
             
             return (
               <button
@@ -397,7 +405,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                     const date = new Date(tempSelectedDate);
                     const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
                     const hours = storeHours?.[dayName];
-                    const isToday = tempSelectedDate === new Date().toISOString().split('T')[0];
+                    const isToday = tempSelectedDate === getLocalDateString();
                     
                     if (!hours || hours.closed) {
                       return `We're closed on ${date.toLocaleDateString('en-US', { weekday: 'long' })}s. Please select another day.`;
@@ -416,7 +424,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                 onClick={() => {
                   const tomorrow = new Date();
                   tomorrow.setDate(tomorrow.getDate() + 1);
-                  const tomorrowString = tomorrow.toISOString().split('T')[0];
+                  const tomorrowString = getLocalDateString(tomorrow);
                   handleDateSelect(tomorrowString);
                 }}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"

@@ -46,7 +46,7 @@ function App() {
       } catch (error) {
         // Silently fail - this is just preloading
         if (process.env.NODE_ENV === 'development') {
-          console.debug('Preloading failed:', error);
+          // Preloading failed silently
         }
       }
     };
@@ -115,26 +115,67 @@ function App() {
             <Toaster 
               position="top-right"
               toastOptions={{
-                duration: 4000,
+                duration: 3000,
                 style: {
-                  background: '#363636',
-                  color: '#fff',
+                  background: '#ffffff',
+                  color: '#374151',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  padding: '12px 16px',
+                  maxWidth: '350px',
+                  minHeight: 'auto',
                 },
                 success: {
-                  duration: 3000,
+                  duration: 2500,
+                  style: {
+                    background: 'linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%)',
+                    color: '#065f46',
+                    border: '1px solid #10b981',
+                    borderLeft: '4px solid #10b981',
+                    boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.1), 0 4px 6px -2px rgba(16, 185, 129, 0.05)',
+                  },
                   iconTheme: {
-                    primary: '#4ade80',
-                    secondary: '#fff',
+                    primary: '#10b981',
+                    secondary: '#ffffff',
                   },
                 },
                 error: {
-                  duration: 5000,
+                  duration: 4000,
+                  style: {
+                    background: 'linear-gradient(135deg, #fef2f2 0%, #fef7f7 100%)',
+                    color: '#7f1d1d',
+                    border: '1px solid #ef4444',
+                    borderLeft: '4px solid #ef4444',
+                    boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.1), 0 4px 6px -2px rgba(239, 68, 68, 0.05)',
+                  },
                   iconTheme: {
                     primary: '#ef4444',
-                    secondary: '#fff',
+                    secondary: '#ffffff',
+                  },
+                },
+                loading: {
+                  style: {
+                    background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                    color: '#475569',
+                    border: '1px solid #94a3b8',
+                    borderLeft: '4px solid #94a3b8',
+                    boxShadow: '0 10px 15px -3px rgba(148, 163, 184, 0.1), 0 4px 6px -2px rgba(148, 163, 184, 0.05)',
+                  },
+                  iconTheme: {
+                    primary: '#94a3b8',
+                    secondary: '#ffffff',
                   },
                 },
               }}
+              containerStyle={{
+                top: '80px',
+                right: '16px',
+                zIndex: 9999,
+              }}
+              gutter={8}
             />
             </div>
           </Router>

@@ -66,6 +66,8 @@ const CartPage: React.FC = () => {
       const checkoutData = {
         items,
         pickupLocation: selectedLocation,
+        pickupDate: selectedPickupDate,
+        pickupTime: selectedPickupTime,
         customerInfo: {
           name: 'Customer', // Will be collected by Square
           phone: '', // Will be collected by Square
@@ -83,7 +85,7 @@ const CartPage: React.FC = () => {
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Checkout error:', error);
+        // Checkout error logged
       }
       toast.error('Failed to proceed to checkout. Please try again.');
     } finally {

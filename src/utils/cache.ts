@@ -167,7 +167,7 @@ class Cache<T = any> {
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('Failed to load cache from storage:', error);
+        // Failed to load cache from storage
       }
     }
   }
@@ -181,7 +181,7 @@ class Cache<T = any> {
       storage.setItem(`cache_${this.constructor.name}`, serialized);
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('Failed to save cache to storage:', error);
+        // Failed to save cache to storage
       }
     }
   }

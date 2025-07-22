@@ -5,6 +5,8 @@ import { squareService } from '../services/squareService';
 import GooglePayButton from '@google-pay/button-react';
 import DiscountCode from '../components/checkout/DiscountCode';
 import DateTimePicker from '../components/common/DateTimePicker';
+import { Validator } from '../utils/validation';
+import { trackError } from '../utils/performance';
 
 import { 
   CreditCard, 
@@ -74,15 +76,11 @@ const CheckoutPage: React.FC = () => {
   const subtotal = getSubtotal();
   const discountAmount = getTotalDiscount();
   const discountedSubtotal = subtotal - discountAmount;
-  const tax = discountedSubtotal * 0.08875; // 8.875% tax rate
+  // Tax will be calculated automatically by Square
   const finalTipAmount = showCustomTip ? parseFloat(customTip) || 0 : tipAmount;
-  const finalTotal = discountedSubtotal + tax + finalTipAmount;
+  const finalTotal = discountedSubtotal + finalTipAmount; // Square will add tax automatically
 
-  // Calculate estimated pickup time (15 minutes from now)
-  const estimatedPickupTime = useMemo(() => {
-    const now = new Date();
-    return new Date(now.getTime() + 15 * 60000); // 15 minutes
-  }, []);
+  // No default pickup time - customers must select their pickup time
 
   // Initialize Square Web Payments SDK
   useEffect(() => {
@@ -98,7 +96,7 @@ const CheckoutPage: React.FC = () => {
         await squareService.initializeCard('card-container');
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('Failed to initialize Square:', error);
+          // Failed to initialize Square
         }
       }
     };
@@ -113,13 +111,55 @@ const CheckoutPage: React.FC = () => {
   }
 
   const validateCustomerInfo = () => {
-    const required = ['firstName', 'lastName', 'email', 'phone'];
-    for (const field of required) {
-      if (!customerInfo[field as keyof CustomerInfo]) {
-        toast.error(`Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
-        return false;
-      }
+    // Validate first name
+    const firstNameValidation = Validator.create(customerInfo.firstName)
+      .required('First name is required')
+      .minLength(2, 'First name must be at least 2 characters')
+      .maxLength(50, 'First name must be less than 50 characters')
+      .pattern(/^[a-zA-Z\s'-]+$/, 'First name can only contain letters, spaces, hyphens, and apostrophes')
+      .validate();
+    
+    if (!firstNameValidation.isValid) {
+      toast.error(firstNameValidation.errors[0]);
+      return false;
     }
+
+    // Validate last name
+    const lastNameValidation = Validator.create(customerInfo.lastName)
+      .required('Last name is required')
+      .minLength(2, 'Last name must be at least 2 characters')
+      .maxLength(50, 'Last name must be less than 50 characters')
+      .pattern(/^[a-zA-Z\s'-]+$/, 'Last name can only contain letters, spaces, hyphens, and apostrophes')
+      .validate();
+    
+    if (!lastNameValidation.isValid) {
+      toast.error(lastNameValidation.errors[0]);
+      return false;
+    }
+
+    // Validate email
+    const emailValidation = Validator.create(customerInfo.email)
+      .required('Email address is required')
+      .email('Please enter a valid email address')
+      .maxLength(100, 'Email address must be less than 100 characters')
+      .validate();
+    
+    if (!emailValidation.isValid) {
+      toast.error(emailValidation.errors[0]);
+      return false;
+    }
+
+    // Validate phone
+    const phoneValidation = Validator.create(customerInfo.phone)
+      .required('Phone number is required')
+      .phone('Please enter a valid phone number (e.g., (555) 123-4567)')
+      .validate();
+    
+    if (!phoneValidation.isValid) {
+      toast.error(phoneValidation.errors[0]);
+      return false;
+    }
+
     return true;
   };
 
@@ -169,10 +209,25 @@ const CheckoutPage: React.FC = () => {
       window.location.href = result.checkoutUrl;
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Please try again.';
+      
+      // Track error for monitoring
+      trackError(error instanceof Error ? error : new Error(String(error)), {
+        operation: 'square_checkout_redirect',
+        customerInfo: {
+          hasEmail: !!customerInfo.email,
+          hasPhone: !!customerInfo.phone,
+          hasName: !!(customerInfo.firstName && customerInfo.lastName)
+        },
+        itemCount: items.length,
+        totalAmount: finalTotal
+      });
+      
       if (process.env.NODE_ENV === 'development') {
-        console.error('Square Checkout failed:', error);
+        // Square Checkout failed
       }
-      toast.error(`Checkout failed: ${error instanceof Error ? error.message : 'Please try again.'}`);
+      
+      toast.error(`Checkout failed: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -214,7 +269,7 @@ const CheckoutPage: React.FC = () => {
         };
 
         // Create order in Square
-        const orderResult = await squareService.createCheckoutSession(checkoutData);
+                           const orderResult = await squareService.createCheckoutSession(checkoutData);
         
         // Process payment
         const paymentResult = await squareService.processPayment(
@@ -224,13 +279,16 @@ const CheckoutPage: React.FC = () => {
         );
 
         if (paymentResult.success) {
+          // Create actual pickup time from selected date and time
+          const actualPickupTime = new Date(`${selectedPickupDate}T${selectedPickupTime}`);
+            
           // Clear cart and navigate to success page
           clearCart();
           navigate('/checkout/success', { 
             state: { 
               orderId: orderResult.orderId,
               total: orderResult.total / 100, // Convert back from cents
-              estimatedPickupTime,
+              estimatedPickupTime: actualPickupTime,
               transactionId: paymentResult.transactionId
             } 
           });
@@ -242,10 +300,26 @@ const CheckoutPage: React.FC = () => {
         throw new Error(errorMessage);
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Please try again.';
+      
+      // Track error for monitoring
+      trackError(error instanceof Error ? error : new Error(String(error)), {
+        operation: 'square_web_payments',
+        customerInfo: {
+          hasEmail: !!customerInfo.email,
+          hasPhone: !!customerInfo.phone,
+          hasName: !!(customerInfo.firstName && customerInfo.lastName)
+        },
+        itemCount: items.length,
+        totalAmount: finalTotal,
+        paymentMethod: selectedPaymentMethod
+      });
+      
       if (process.env.NODE_ENV === 'development') {
-        console.error('Checkout failed:', error);
+        // Checkout error
       }
-       toast.error(`Checkout failed: ${error instanceof Error ? error.message : 'Please try again.'}`);
+      
+      toast.error(`Checkout failed: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -509,17 +583,73 @@ const CheckoutPage: React.FC = () => {
                           countryCode: 'US',
                         },
                       }}
-                      onLoadPaymentData={(paymentData) => {
-                    
-                        // Handle the payment data here
-                        // You would typically send this to your payment processor
-                        toast.success('Google Pay payment initiated!');
-                        // For demo purposes, redirect to success page
-                        navigate('/checkout/success');
+                      onLoadPaymentData={async (paymentData) => {
+                        if (!validateCustomerInfo()) {
+                          return;
+                        }
+
+                        if (!validatePickupDateTime()) {
+                          return;
+                        }
+
+                        setLoading(true);
+                        try {
+                          const checkoutData = {
+                            items,
+                            pickupLocation: selectedLocation!,
+                            customerInfo: {
+                              name: `${customerInfo.firstName} ${customerInfo.lastName}`,
+                              phone: customerInfo.phone,
+                              email: customerInfo.email
+                            },
+                            appliedDiscounts,
+                            pickupDate: selectedPickupDate!,
+                            pickupTime: selectedPickupTime!
+                          };
+
+                          // Create order in Square
+                          const orderResult = await squareService.createCheckoutSession(checkoutData);
+                          
+                          // Process Google Pay payment
+                          const googlePayToken = paymentData.paymentMethodData.tokenizationData.token;
+                          const paymentResult = await squareService.processPayment(
+                            googlePayToken,
+                            orderResult.total,
+                            orderResult.orderId
+                          );
+
+                          if (paymentResult.success) {
+                            // Create actual pickup time from selected date and time
+                            const actualPickupTime = new Date(`${selectedPickupDate}T${selectedPickupTime}`);
+                              
+                            // Clear cart and navigate to success page
+                            clearCart();
+                            navigate('/checkout/success', { 
+                              state: { 
+                                orderId: orderResult.orderId,
+                                total: orderResult.total / 100, // Convert back from cents
+                                estimatedPickupTime: actualPickupTime,
+                                transactionId: paymentResult.transactionId
+                              } 
+                            });
+                          } else {
+                            throw new Error('Google Pay payment processing failed');
+                          }
+                        } catch (error) {
+                          const errorMessage = error instanceof Error ? error.message : 'Please try again.';
+                          
+                          if (process.env.NODE_ENV === 'development') {
+                            // Google Pay error
+                          }
+                          
+                          toast.error(`Google Pay payment failed: ${errorMessage}`);
+                        } finally {
+                          setLoading(false);
+                        }
                       }}
                       onError={(error) => {
                         if (process.env.NODE_ENV === 'development') {
-                          console.error('Google Pay error:', error);
+                          // Google Pay error
                         }
                         toast.error('Google Pay payment failed. Please try another payment method.');
                       }}
@@ -690,13 +820,13 @@ const CheckoutPage: React.FC = () => {
                         if (Array.isArray(selectedValue)) {
                           selectedValue.forEach(value => {
                             const option = variant.options.find(opt => opt.name === value);
-                            if (option && option.price) {
+                            if (option && option.price !== undefined) {
                               itemPrice += option.price;
                             }
                           });
                         } else {
                           const option = variant.options.find(opt => opt.name === selectedValue);
-                          if (option && option.price) {
+                          if (option && option.price !== undefined) {
                             itemPrice += option.price;
                           }
                         }
@@ -776,10 +906,7 @@ const CheckoutPage: React.FC = () => {
                     <span>-${discountAmount.toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-gray-600">
-                  <span>Taxes (Missouri)</span>
-                  <span>${tax.toFixed(2)}</span>
-                </div>
+                {/* Tax will be calculated and displayed by Square during checkout */}
                 {finalTipAmount > 0 && (
                   <div className="flex justify-between text-gray-600">
                     <span>Tip</span>

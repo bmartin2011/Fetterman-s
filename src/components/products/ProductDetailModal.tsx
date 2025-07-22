@@ -96,6 +96,13 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
     return selected ? 1 : 0;
   };
 
+  // Helper function to clean option names
+  const cleanOptionName = (name: string): string => {
+    if (!name) return '';
+    // Remove trailing " 0" or similar patterns
+    return name.replace(/\s+0+$/, '').trim();
+  };
+
   // Validation function for modifier selections
   const validateModifierSelections = (): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
@@ -183,14 +190,14 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
             // Multiple selection (checklist)
             selectedValue.forEach(optionValue => {
               const option = variant.options.find(opt => opt.name === optionValue);
-              if (option && option.price) {
+              if (option && option.price !== undefined) {
                 total += option.price;
               }
             });
           } else {
             // Single selection (dropdown)
             const option = variant.options.find(opt => opt.name === selectedValue);
-            if (option && option.price) {
+            if (option && option.price !== undefined) {
               total += option.price;
             }
           }
@@ -311,13 +318,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
             </div>
           )}
 
-          {/* Preparation Time */}
-          {product.preparationTime && (
-            <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg">
-              <h3 className="text-sm sm:text-base lg:text-base font-semibold text-yellow-900 mb-2">⏱️ Preparation Time:</h3>
-              <p className="text-yellow-800 font-medium text-sm">{product.preparationTime} minutes</p>
-            </div>
-          )}
+
 
           {/* Product Variants - Reduced spacing and font sizes */}
           {product.variants?.map((variant: ProductVariant) => {
@@ -357,10 +358,17 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
                       className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none cursor-pointer text-sm"
                     >
                       <option value="">Select an option</option>
-                      {variant.options.map((option) => (
+                      {variant.options
+                        .filter((option) => {
+                          // Filter out invalid options
+                          if (!option.name || option.name.trim() === '') return false;
+                          if (option.name === '0' || option.name === 'null' || option.name === 'undefined') return false;
+                          return true;
+                        })
+                        .map((option) => (
                          <option key={option.id} value={option.name}>
-                           {option.name}
-                           {option.price && option.price > 0 && ` (+$${(option.price / 100).toFixed(2)})`}
+                           {cleanOptionName(option.name)}
+                           {option.price !== undefined ? ` (+$${option.price.toFixed(2)})` : ''}
                          </option>
                        ))}
                     </select>
@@ -368,7 +376,14 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {variant.options.map((option) => {
+                    {variant.options
+                      .filter((option) => {
+                          // Filter out invalid options
+                          if (!option.name || option.name.trim() === '') return false;
+                          if (option.name === '0' || option.name === 'null' || option.name === 'undefined') return false;
+                          return true;
+                        })
+                      .map((option) => {
                       const isSelected = ((selectedOptions.selectedVariants[variant.id] as string[]) || []).includes(option.name);
                       const isMaxReached = maxAllowed !== undefined && selectedCount >= maxAllowed && !isSelected;
                       
@@ -383,12 +398,12 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
                             onChange={() => handleVariantChange(variant.id, option.name, true)}
                             className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 focus:ring-2 disabled:opacity-50"
                           />
-                          <span className="flex-1 ml-2 text-gray-900 font-medium text-sm">{option.name}</span>
-                           {option.price && option.price > 0 && (
-                             <span className="text-green-700 font-semibold text-sm">
-                               +${(option.price / 100).toFixed(2)}
-                             </span>
-                           )}
+                          <span className="flex-1 ml-2 text-gray-900 font-medium text-sm">{cleanOptionName(option.name)}</span>
+                           {option.price !== undefined ? (
+                              <span className="text-green-700 font-semibold text-sm">
+                                +${option.price.toFixed(2)}
+                              </span>
+                            ) : null}
 
                         </label>
                       );

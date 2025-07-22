@@ -1,6 +1,6 @@
-import { CartItem, StoreLocation, Product, Category, ProductVariant, OrderStatus, Discount, AppliedDiscount, DiscountValidationResult, DiscountType, SquareMeasurementUnit, MeasurementUnit } from '../types';
+import { CartItem, StoreLocation, Product, Category, ProductVariant, ProductVariantOption, OrderStatus, Discount, AppliedDiscount, DiscountValidationResult, DiscountType, SquareMeasurementUnit, MeasurementUnit } from '../types';
 import { apiCache, createCacheKey } from '../utils/cache';
-import { trackApiCall } from '../utils/performance';
+import { trackApiCall, trackError } from '../utils/performance';
 
 export interface SquareCheckoutData {
   items: CartItem[];
@@ -50,6 +50,8 @@ export class SquareService {
   private locationId: string;
   private environment: string;
   private baseUrl: string;
+  private readonly MAX_RETRIES = 3;
+  private readonly RETRY_DELAY_BASE = 1000; // 1 second base delay
   
   // Enhanced caching with performance monitoring
   private readonly CACHE_TTL = {
@@ -71,6 +73,79 @@ export class SquareService {
     this.baseUrl = backendUrl.includes('/api/square') ? backendUrl : `${backendUrl}/api/square`;
   }
 
+  // Enhanced API call with retry mechanism and response validation
+  private async retryApiCall<T>(
+    apiCall: () => Promise<Response>,
+    operation: string,
+    expectedFields?: string[]
+  ): Promise<T> {   
+    let lastError: Error;
+    
+    for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
+      try {
+        const response = await apiCall();
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          const errorMessage = errorData.errors?.[0]?.detail || response.statusText;
+          
+          // Don't retry client errors (4xx), only server errors (5xx) and network issues
+          if (response.status >= 400 && response.status < 500) {
+            throw new Error(`Square API error: ${errorMessage}`);
+          }
+          
+          throw new Error(`Server error (${response.status}): ${errorMessage}`);
+        }
+        
+        const data = await response.json();
+        
+        // Validate response structure if expected fields are provided
+        if (expectedFields) {
+          this.validateApiResponse(data, expectedFields, operation);
+        }
+        
+        return data;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        
+        // Don't retry client errors or validation errors
+        if (lastError.message.includes('Square API error') || 
+            lastError.message.includes('Invalid response')) {
+          break;
+        }
+        
+        if (attempt === this.MAX_RETRIES) {
+          break;
+        }
+        
+        // Exponential backoff with jitter
+        const delay = this.RETRY_DELAY_BASE * Math.pow(2, attempt - 1) + Math.random() * 1000;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        
+        if (process.env.NODE_ENV === 'development') {
+          // Retrying operation
+        }
+      }
+    }
+    
+    // Track the error for monitoring
+    trackError(lastError!, { operation, attempts: this.MAX_RETRIES });
+    throw lastError!;
+  }
+
+  // Validate API response structure
+  private validateApiResponse(response: any, expectedFields: string[], operation: string): void {
+    if (!response) {
+      throw new Error(`Invalid response from ${operation}: Empty response`);
+    }
+    
+    for (const field of expectedFields) {
+      if (!(field in response)) {
+        throw new Error(`Invalid response from ${operation}: Missing required field '${field}'`);
+      }
+    }
+  }
+
   // Get the main location ID from Square with caching
   async getMainLocationId(): Promise<string> {
     const cacheKey = createCacheKey('main_location_id');
@@ -82,19 +157,16 @@ export class SquareService {
     }
 
     return trackApiCall(async () => {
-      const response = await fetch(`${this.baseUrl}/locations`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Square API error: ${errorData.errors?.[0]?.detail || response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await this.retryApiCall<any>(
+        () => fetch(`${this.baseUrl}/locations`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }),
+        'getMainLocationId',
+        ['locations']
+      );
       
       if (data.locations && data.locations.length > 0) {
         const locationId = data.locations[0].id;
@@ -118,19 +190,16 @@ export class SquareService {
     }
 
     return trackApiCall(async () => {
-      const response = await fetch(`${this.baseUrl}/locations`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Square API error: ${errorData.errors?.[0]?.detail || response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await this.retryApiCall<any>(
+        () => fetch(`${this.baseUrl}/locations`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }),
+        'getSquareLocations',
+        ['locations']
+      );
       
       if (!data.locations || data.locations.length === 0) {
         return [];
@@ -308,6 +377,9 @@ export class SquareService {
         location_id: this.locationId || await this.getMainLocationId(),
         order: {
           location_id: this.locationId || await this.getMainLocationId(),
+          pricing_options: {
+            auto_apply_taxes: true
+          },
           line_items: data.items.map(item => {
             let itemPrice = item.product.price;
             
@@ -383,7 +455,7 @@ export class SquareService {
       };
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error creating checkout session:', error);
+        // Error creating checkout session
       }
       throw error;
     }
@@ -418,7 +490,7 @@ export class SquareService {
       };
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error processing payment:', error);
+        // Error processing payment
       }
       throw error;
     }
@@ -448,7 +520,7 @@ export class SquareService {
       };
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error creating checkout:', error);
+        // Error creating checkout
       }
       throw error;
     }
@@ -562,7 +634,7 @@ export class SquareService {
       
       return discounts;
     }, 'getDiscounts').catch(error => {
-      console.error('Error fetching discounts from Square:', error);
+      // Error fetching discounts from Square
       // Return fallback mock discounts if Square API fails
       return this.getFallbackDiscounts();
     });
@@ -692,7 +764,7 @@ export class SquareService {
       };
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error validating discount:', error);
+        // Error validating discount
       }
       return {
         isValid: false,
@@ -821,7 +893,7 @@ export class SquareService {
        return appliedDiscounts;
      } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error applying automatic discounts:', error);
+        // Error applying automatic discounts
       }
       return [];
     }
@@ -891,19 +963,37 @@ export class SquareService {
     const cacheKey = createCacheKey('products');
     apiCache.delete(cacheKey);
     if (process.env.NODE_ENV === 'development') {
-      console.log('Products cache cleared');
+      // Products cache cleared
     }
+  }
+
+  // Client-side location filtering using Square's built-in location fields
+  private filterProductsByLocation(products: Product[], locationId?: string): Product[] {
+    if (!locationId) {
+      return products; // Return all products if no location specified
+    }
+    
+    return products.filter(product => {
+      // Check if product is available at all locations
+      if (product.present_at_all_locations) {
+        return true;
+      }
+      
+      // Check if product is available at the specific location
+      return product.present_at_location_ids?.includes(locationId) || false;
+    });
   }
 
   // Method to refresh products cache immediately
-  async refreshProducts(): Promise<Product[]> {
+  async refreshProducts(locationId?: string): Promise<Product[]> {
     if (process.env.NODE_ENV === 'development') {
-      console.log('Refreshing products cache...');
+      // Refreshing products cache
     }
-    return this.getProducts(true);
+    return this.getProducts(true, locationId);
   }
 
-  async getProducts(forceRefresh: boolean = false): Promise<Product[]> {
+  async getProducts(forceRefresh: boolean = false, locationId?: string): Promise<Product[]> {
+    // Use single cache key for all products - location filtering handled client-side
     const cacheKey = createCacheKey('products');
     
     // Clear cache if force refresh is requested
@@ -914,19 +1004,22 @@ export class SquareService {
     // Check cache first
     const cachedProducts = apiCache.get(cacheKey) as Product[] | null;
     if (cachedProducts) {
-      return cachedProducts;
+      // Filter cached products by location client-side
+      return this.filterProductsByLocation(cachedProducts, locationId);
     }
 
     return trackApiCall(async () => {
     try {
 
       // Fetch products, modifiers, and categories
+      // No longer passing locationId to backend - all products fetched at once
       const [productsResponse, modifiersData, categoriesData] = await Promise.all([
         fetch(`${this.baseUrl}/products`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
-          }
+          },
+          body: JSON.stringify({})
         }),
         this.getModifiers(),
         this.getCategories()
@@ -948,6 +1041,12 @@ export class SquareService {
             imageMap.set(obj.id, obj.image_data.url);
           }
         });
+        
+        if (process.env.NODE_ENV === 'development') {
+          // Found images in Square API response
+        }
+      } else if (process.env.NODE_ENV === 'development') {
+        // No related_objects found in Square API response
       }
 
       // Create category map for quick lookup
@@ -980,6 +1079,10 @@ export class SquareService {
             // Extract images using the image map
             const images = itemData.image_ids ? 
               itemData.image_ids.map((id: string) => imageMap.get(id)).filter(Boolean) : [];
+            
+            if (process.env.NODE_ENV === 'development' && itemData.image_ids && itemData.image_ids.length > 0 && images.length === 0) {
+              // Product has image_ids but no matching images found
+            }
             
             // Combine variations and modifiers into variants
             const allVariants = [
@@ -1062,7 +1165,10 @@ export class SquareService {
                sellable: itemData.sellable !== false,
                allergens: allergens,
                nutritionalInfo: nutritionalInfo,
-               preparationTime: preparationTime
+               preparationTime: preparationTime,
+               // Square location fields for client-side filtering
+               present_at_all_locations: item.present_at_all_locations,
+               present_at_location_ids: item.present_at_location_ids
              };
 
             products.push(product);
@@ -1070,13 +1176,14 @@ export class SquareService {
         }
       }
 
-      // Cache the results
+      // Cache the results (all products)
       apiCache.set(cacheKey, products, this.CACHE_TTL.products);
       
-      return products;
+      // Filter products by location client-side before returning
+      return this.filterProductsByLocation(products, locationId);
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching products from Square:', error);
+        // Error fetching products from Square
       }
       throw error;
     }
@@ -1096,10 +1203,32 @@ export class SquareService {
       name: 'Size',
       type: 'dropdown',
       options: variations.map((variation, index) => {
-        const varData = variation.item_variation_data;
-        const price = varData?.price_money 
-          ? (varData.price_money.amount / 100) - (variations[0].item_variation_data?.price_money?.amount / 100 || 0)
-          : 0;
+        let varData = variation.item_variation_data;
+        
+        // Handle case where item_variation_data might be a string representation
+        if (typeof varData === 'string') {
+          // Skip malformed data that can't be parsed
+          if (process.env.NODE_ENV === 'development') {
+            // Skipping malformed variation data
+          }
+          return null;
+        }
+        
+        // Skip variations without proper data or with invalid names
+        if (!varData || !varData.name || varData.name === '0' || varData.name.trim() === '') {
+          if (process.env.NODE_ENV === 'development') {
+            // Skipping variation with invalid name
+          }
+          return null;
+        }
+        
+        // Calculate price difference from base price
+        const basePrice = variations[0].item_variation_data?.price_money?.amount / 100 || 0;
+        const variantPrice = varData?.price_money ? varData.price_money.amount / 100 : 0;
+        const priceDifference = variantPrice - basePrice;
+        
+        // Store the price difference, but use undefined for zero differences to indicate no additional cost
+        const price = priceDifference !== 0 ? priceDifference : undefined;
         
         // Extract measurement unit information
         let measurementUnit: any | undefined;
@@ -1124,18 +1253,19 @@ export class SquareService {
         
         return {
           id: variation.id || `option-${index}`,
-          name: varData?.name || `Option ${index + 1}`,
+          name: varData.name,
           price: price,
           squareVariationId: variation.id,
           stockable: varData?.stockable !== false,
           sellable: varData?.sellable !== false,
           measurementUnit,
           unitQuantity
-        };
-      })
+        } as ProductVariantOption;
+      }).filter((option): option is ProductVariantOption => option !== null) // Remove null options with type guard
     };
 
-    return [sizeVariant];
+    // Only return the variant if it has valid options
+    return sizeVariant.options.length > 0 ? [sizeVariant] : [];
   }
 
   // Helper method to extract ingredients from Square's description field
@@ -1188,12 +1318,24 @@ export class SquareService {
             minSelectedModifiers: minSelected,
             maxSelectedModifiers: maxSelected,
             isRequired: minSelected > 0,
-            options: modifierList.modifiers.map((modifier: any) => ({
-              id: modifier.id,
-              name: modifier.name,
-              price: modifier.price || 0,
-              onByDefault: modifier.onByDefault || false
-            }))
+            options: modifierList.modifiers
+              .filter((modifier: any) => {
+                // Filter out invalid modifier names
+                if (!modifier.name || typeof modifier.name !== 'string') {
+                  return false;
+                }
+                const trimmedName = modifier.name.trim();
+                if (trimmedName === '' || trimmedName === '0' || trimmedName === 'null' || trimmedName === 'undefined') {
+                  return false;
+                }
+                return true;
+              })
+              .map((modifier: any) => ({
+                id: modifier.id,
+                name: modifier.name.trim(),
+                price: modifier.price || 0,
+                onByDefault: modifier.onByDefault || false
+              }))
           };
           
           itemModifiers.push(variant);
@@ -1302,7 +1444,7 @@ export class SquareService {
       return hierarchicalCategories;
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching categories from Square:', error);
+        // Error fetching categories from Square
       }
       throw error;
     }
@@ -1457,7 +1599,7 @@ export class SquareService {
       return modifiers;
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching modifiers from Square:', error);
+        // Error fetching modifiers from Square
       }
       throw error;
     }
@@ -1520,7 +1662,7 @@ export class SquareService {
       return measurementUnits;
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching measurement units from Square:', error);
+        // Error fetching measurement units from Square
       }
       // Return empty array if no measurement units are configured
       return [];
@@ -1599,7 +1741,7 @@ export const squareService = new SquareService();
 (window as any).clearSquareCache = () => {
   squareService.clearCache();
   if (process.env.NODE_ENV === 'development') {
-    console.log('All Square cache cleared');
+    // All Square cache cleared
   }
 };
 
@@ -1607,11 +1749,11 @@ export const squareService = new SquareService();
   try {
     const products = await squareService.refreshProducts();
     if (process.env.NODE_ENV === 'development') {
-      console.log(`Products refreshed: ${products.length} products loaded`);
+      // Products refreshed
     }
     return products;
   } catch (error) {
-    console.error('Failed to refresh products:', error);
+    // Failed to refresh products
   }
 };
 

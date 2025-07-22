@@ -3,15 +3,15 @@ import { Link } from 'react-router-dom';
 import { MapPin, Clock, Star, ArrowRight, Phone, Coffee, IceCream, Sandwich, Zap } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import LocationSelector from '../components/common/LocationSelector';
-import ProductCard from '../components/products/ProductCard';
-import { Product, Category, StoreLocation } from '../types';
+
+import { Category, StoreLocation } from '../types';
 import { squareService } from '../services/squareService';
 import { AriaLabels, ScreenReaderUtils, KeyboardUtils, useAnnouncement } from '../utils/accessibility';
 
 const HomePage: React.FC = () => {
   const { selectedLocation, setPickupLocation } = useCart();
   const [showLocationSelector, setShowLocationSelector] = useState(false);
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [storeLocations, setStoreLocations] = useState<StoreLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,34 +29,18 @@ const HomePage: React.FC = () => {
         setIsLoading(true);
         setError(null);
         
-        const [products, categoriesData, locationsData] = await Promise.all([
-          squareService.getProducts(),
+        const [categoriesData, locationsData] = await Promise.all([
           squareService.getCategories(),
           squareService.getSquareLocations()
         ]);
         
-        // Include products that are either featured OR belong to a 'popular' category
-        const popularCategory = categoriesData.find(cat => cat.name.toLowerCase() === 'popular');
-        const featured = products.filter(product => {
-          const isFeatured = product.isFeatured || false;
-          const isInPopularCategory = popularCategory && (
-            product.categoryId === popularCategory.id || 
-            (product.categoryIds && product.categoryIds.includes(popularCategory.id))
-          );
-          const hasPopularInCategory = product.category.toLowerCase().includes('popular') ||
-            (product.categories && product.categories.some(cat => cat.toLowerCase().includes('popular')));
-          
-          return isFeatured || isInPopularCategory || hasPopularInCategory;
-        });
-        
-        setFeaturedProducts(featured.slice(0, 6));
         setCategories(categoriesData);
         setStoreLocations(locationsData);
         
-        announce(`Page loaded successfully. ${featured.length} featured products available.`);
+        announce('Page loaded successfully.');
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('Error fetching data:', error);
+          // Error fetching data
         }
         setError('Failed to load page content. Please try refreshing the page.');
         announce('Error loading page content. Please try refreshing the page.', 'assertive');
@@ -350,39 +334,27 @@ const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* Featured Products */}
+        {/* Customer Favorites */}
         <section 
-          className="py-24 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50"
+          className="py-32 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50"
           aria-labelledby="featured-products-heading"
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-20">
-              <h2 id="featured-products-heading" className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-emerald-800 to-green-700 bg-clip-text text-transparent mb-8">
-                Customer Favorites
-              </h2>
-              <p className="text-xl md:text-2xl text-gray-700 max-w-4xl mx-auto leading-relaxed">
-                Try our most popular menu items, crafted with passion and the finest ingredients
-              </p>
-            </div>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 id="featured-products-heading" className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-emerald-800 to-green-700 bg-clip-text text-transparent mb-12">
+              CUSTOMER FAVORITES
+            </h2>
+            <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed mb-16">
+              Try our most popular menu items, crafted with passion and the finest ingredients
+            </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10" role="list">
-              {featuredProducts.map((product) => (
-                <div key={product.id} role="listitem" className="h-full flex flex-col">
-                  <ProductCard product={product} />
-                </div>
-              ))}
-            </div>
-            
-            <div className="text-center mt-20">
-              <Link
-                to="/products"
-                className="inline-flex items-center gap-4 bg-gradient-to-r from-emerald-700 to-green-700 text-white px-12 py-5 rounded-2xl font-bold text-xl hover:from-emerald-600 hover:to-green-600 transition-all duration-300 transform hover:scale-105 shadow-2xl border border-emerald-600/30 btn-focus touch-target"
-                aria-label="View our complete menu with all available products"
-              >
-                View Full Menu
-                <ArrowRight className="w-6 h-6" aria-hidden="true" />
-              </Link>
-            </div>
+            <Link
+              to="/products"
+              className="inline-flex items-center gap-4 bg-gradient-to-r from-emerald-700 to-green-700 text-white px-12 py-5 rounded-2xl font-bold text-xl hover:from-emerald-600 hover:to-green-600 transition-all duration-300 transform hover:scale-105 shadow-2xl border border-emerald-600/30 btn-focus touch-target"
+              aria-label="View our complete menu with all available products"
+            >
+              View Full Menu
+              <ArrowRight className="w-6 h-6" aria-hidden="true" />
+            </Link>
           </div>
         </section>
 

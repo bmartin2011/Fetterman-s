@@ -50,9 +50,9 @@ const SimpleProductItem: React.FC<SimpleProductItemProps> = ({
             </p>
           )}
           
-          {/* Price Range */}
+          {/* Price */}
           <div className="text-sm sm:text-base font-semibold text-green-800 mb-1 sm:mb-2">
-            ${product.price.toFixed(2)} - ${(product.price * 1.2).toFixed(2)}
+            ${product.price.toFixed(2)}
           </div>
           
           {/* Store Wide Badge */}

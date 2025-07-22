@@ -37,7 +37,7 @@ export const trackWebVitals = () => {
         };
 
         if (process.env.NODE_ENV === 'development') {
-          console.log(`📊 ${webVital.name}: ${webVital.value.toFixed(2)}ms (${webVital.rating})`);
+          // Web vital tracked
         }
 
         // Send to analytics in production
@@ -53,7 +53,7 @@ export const trackWebVitals = () => {
       getTTFB(handleMetric);
     }).catch(() => {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('Web Vitals library not available');
+        // Web Vitals library not available
       }
     });
   }
@@ -74,7 +74,7 @@ export class PerformanceTimer {
     const duration = endTime - this.startTime;
     
     if (process.env.NODE_ENV === 'development') {
-      console.log(`⏱️ ${this.label}: ${duration.toFixed(2)}ms`);
+      // Performance timer completed
     }
     
     // In production, send to analytics service
@@ -129,7 +129,7 @@ export const trackMemoryUsage = () => {
     };
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('🧠 Memory Usage:', memoryInfo);
+      // Memory usage tracked
     }
     
     return memoryInfo;
@@ -146,7 +146,7 @@ export const trackBundleSize = () => {
       const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
       
       if (process.env.NODE_ENV === 'development') {
-          console.log(`📦 Bundle Load Time: ${loadTime}ms`);
+          // Bundle load time tracked
         }
       
       // In production, send to analytics
@@ -160,7 +160,7 @@ export const trackBundleSize = () => {
 // User interaction tracking
 export const trackUserInteraction = (action: string, element?: string) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log(`👆 User Interaction: ${action}${element ? ` on ${element}` : ''}`);
+    // User interaction tracked
   }
   
   // In production, send to analytics
@@ -181,7 +181,7 @@ export const trackError = (error: Error, context?: any) => {
   };
   
   if (process.env.NODE_ENV === 'development') {
-    console.error('🚨 Error Tracked:', errorInfo);
+    // Error tracked
   }
   
   // In production, send to error tracking service

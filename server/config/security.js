@@ -58,8 +58,16 @@ const helmetConfig = {
 
 // CORS configuration
 const getCorsConfig = () => {
+  const defaultProductionOrigins = [
+    'https://fetterman-s-production.up.railway.app',
+    'https://fetterman-eck3c5e5m-fettermans.vercel.app',
+    'https://fettermans.vercel.app',
+    'https://www.fettermans.com',
+    'https://fettermans.com'
+  ];
+  
   const allowedOrigins = NODE_ENV === 'production' 
-    ? (process.env.ALLOWED_ORIGINS || 'https://fetterman-s-production.up.railway.app').split(',')
+    ? (process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : defaultProductionOrigins)
     : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3002', 'http://127.0.0.1:3002'];
 
   return {
@@ -67,9 +75,16 @@ const getCorsConfig = () => {
       // Allow requests with no origin (mobile apps, etc.)
       if (!origin) return callback(null, true);
       
+      // In production, also allow any vercel.app subdomain for flexibility
+      if (NODE_ENV === 'production' && origin && origin.includes('.vercel.app')) {
+        callback(null, true);
+        return;
+      }
+      
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.log(`CORS blocked origin: ${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     },

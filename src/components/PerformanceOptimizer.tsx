@@ -31,7 +31,7 @@ const PerformanceOptimizer: React.FC<PerformanceOptimizerProps> = ({ children })
         setIsPreloading(false);
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
-          console.warn('Preloading failed, continuing with normal loading:', error);
+          // Preloading failed, continuing with normal loading
         }
         setIsPreloading(false);
       }

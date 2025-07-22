@@ -210,7 +210,7 @@ export async function getAllMeasurementUnits(): Promise<MeasurementUnit[]> {
     return allUnits;
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('Error fetching Square measurement units:', error);
+      // Error fetching Square measurement units
     }
     // Fallback to local units only
     return Object.values(MEASUREMENT_UNITS);
@@ -235,7 +235,7 @@ export async function findMeasurementUnitBySquareId(squareUnitId: string): Promi
     return null;
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('Error finding Square measurement unit:', error);
+      // Error finding Square measurement unit
     }
     return null;
   }

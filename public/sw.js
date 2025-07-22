@@ -25,28 +25,28 @@ const API_ENDPOINTS = [
   '/api/products'
 ];
 
-// Install event - cache static assets
+// Install event - cache static assets (production only)
 self.addEventListener('install', (event) => {
-  if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-    console.log('Service Worker: Installing...');
+  if (isDevelopment) {
+    // Service Worker: Installing in development mode - skipping cache
+    event.waitUntil(self.skipWaiting());
+    return;
   }
+  
+  // Service Worker: Installing in production mode
   
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => {
-        if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-      console.log('Service Worker: Caching static assets');
-    }
+        // Service Worker: Caching static assets
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => {
-        if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-      console.log('Service Worker: Static assets cached');
-    }
+        // Service Worker: Static assets cached
         return self.skipWaiting();
       })
       .catch((error) => {
-        console.error('Service Worker: Failed to cache static assets', error);
+        // Service Worker: Failed to cache static assets
       })
   );
 });
@@ -54,7 +54,9 @@ self.addEventListener('install', (event) => {
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
   if (isDevelopment) {
-    console.log('Service Worker: Activating...');
+    // Service Worker: Activating in development mode - clearing ALL caches
+  } else {
+    // Service Worker: Activating in production mode
   }
   
   event.waitUntil(
@@ -62,23 +64,20 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            // In development, clear all caches to prevent stale data
+            // In development, clear ALL caches to prevent stale data
+            // In production, only clear old/unused caches
             if (isDevelopment || (cacheName !== STATIC_CACHE && 
                 cacheName !== DYNAMIC_CACHE && 
                 cacheName !== IMAGE_CACHE && 
                 cacheName !== API_CACHE)) {
-              if (isDevelopment) {
-                console.log('Service Worker: Deleting cache', cacheName);
-              }
+              // Service Worker: Deleting cache
               return caches.delete(cacheName);
             }
           })
         );
       })
       .then(() => {
-        if (isDevelopment) {
-          console.log('Service Worker: Activated and caches cleared');
-        }
+        // Service Worker: Activated and caches processed
         return self.clients.claim();
       })
   );
@@ -94,12 +93,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // In development mode, skip caching for API requests to avoid serving stale data
-  if (isDevelopment && isAPIRequest(url)) {
-    return; // Let the request go through normally without caching
+  // In development mode, skip ALL caching to prevent serving stale content
+  if (isDevelopment) {
+    return; // Let all requests go through normally without caching in development
   }
 
-  // Handle different types of requests with appropriate caching strategies
+  // Handle different types of requests with appropriate caching strategies (production only)
   if (isStaticAsset(url)) {
     event.respondWith(cacheFirst(request, STATIC_CACHE));
   } else if (isImage(url)) {
@@ -120,15 +119,11 @@ async function cacheFirst(request, cacheName) {
     const cachedResponse = await cache.match(request);
     
     if (cachedResponse) {
-      if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-          console.log('Service Worker: Serving from cache', request.url);
-        }
+      // Service Worker: Serving from cache
       return cachedResponse;
     }
     
-    if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-          console.log('Service Worker: Fetching and caching', request.url);
-        }
+    // Service Worker: Fetching and caching
     const networkResponse = await fetch(request);
     
     if (networkResponse.ok) {
@@ -137,7 +132,7 @@ async function cacheFirst(request, cacheName) {
     
     return networkResponse;
   } catch (error) {
-    console.error('Service Worker: Cache-first failed', error);
+    // Service Worker: Cache-first failed
     return new Response('Offline content not available', { status: 503 });
   }
 }
@@ -145,9 +140,7 @@ async function cacheFirst(request, cacheName) {
 // Network-first strategy (good for API calls)
 async function networkFirst(request, cacheName) {
   try {
-    if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-        console.log('Service Worker: Network-first for', request.url);
-      }
+    // Service Worker: Network-first
     const networkResponse = await fetch(request);
     
     if (networkResponse.ok) {
@@ -157,9 +150,7 @@ async function networkFirst(request, cacheName) {
     
     return networkResponse;
   } catch (error) {
-    if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-          console.log('Service Worker: Network failed, trying cache', request.url);
-        }
+    // Service Worker: Network failed, trying cache
     const cache = await caches.open(cacheName);
     const cachedResponse = await cache.match(request);
     
@@ -185,23 +176,17 @@ async function staleWhileRevalidate(request, cacheName) {
       return networkResponse;
     })
     .catch(() => {
-      if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-          console.log('Service Worker: Background fetch failed for', request.url);
-        }
+      // Service Worker: Background fetch failed
     });
   
   // Return cached version immediately if available
   if (cachedResponse) {
-    if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-        console.log('Service Worker: Serving stale content', request.url);
-      }
+    // Service Worker: Serving stale content
     return cachedResponse;
   }
   
   // If no cache, wait for network
-  if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-      console.log('Service Worker: No cache, waiting for network', request.url);
-    }
+  // Service Worker: No cache, waiting for network
   return fetchPromise;
 }
 
@@ -228,9 +213,7 @@ function isNavigationRequest(request) {
 
 // Background sync for offline actions
 self.addEventListener('sync', (event) => {
-  if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-    console.log('Service Worker: Background sync', event.tag);
-  }
+  // Service Worker: Background sync
   
   if (event.tag === 'background-sync') {
     event.waitUntil(doBackgroundSync());
@@ -240,24 +223,20 @@ self.addEventListener('sync', (event) => {
 async function doBackgroundSync() {
   try {
     // Handle any queued offline actions
-    if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-      console.log('Service Worker: Performing background sync');
-    }
+    // Service Worker: Performing background sync
     
     // Example: Send queued analytics data
     // const queuedData = await getQueuedData();
     // await sendQueuedData(queuedData);
     
   } catch (error) {
-    console.error('Service Worker: Background sync failed', error);
+    // Service Worker: Background sync failed
   }
 }
 
 // Push notification handling
 self.addEventListener('push', (event) => {
-  if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-    console.log('Service Worker: Push received');
-  }
+  // Service Worker: Push received
   
   const options = {
     body: event.data ? event.data.text() : 'New notification',
@@ -289,9 +268,7 @@ self.addEventListener('push', (event) => {
 
 // Notification click handling
 self.addEventListener('notificationclick', (event) => {
-  if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-    console.log('Service Worker: Notification clicked');
-  }
+  // Service Worker: Notification clicked
   
   event.notification.close();
   
@@ -304,9 +281,9 @@ self.addEventListener('notificationclick', (event) => {
 
 // Error handling
 self.addEventListener('error', (event) => {
-  console.error('Service Worker: Error', event.error);
+  // Service Worker: Error
 });
 
 self.addEventListener('unhandledrejection', (event) => {
-  console.error('Service Worker: Unhandled promise rejection', event.reason);
+  // Service Worker: Unhandled promise rejection
 });

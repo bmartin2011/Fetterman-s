@@ -156,7 +156,7 @@ export const secureStorage = {
       const encrypted = btoa(JSON.stringify(value));
       sessionStorage.setItem(key, encrypted);
     } catch (error) {
-      console.warn('Failed to store data securely:', error);
+      // Failed to store data securely
     }
   },
   
@@ -167,7 +167,7 @@ export const secureStorage = {
       
       return JSON.parse(atob(encrypted));
     } catch (error) {
-      console.warn('Failed to retrieve data securely:', error);
+      // Failed to retrieve data securely
       return null;
     }
   },
@@ -193,7 +193,7 @@ export const validateEnvironment = (): void => {
   const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
   
   if (missing.length > 0) {
-    console.error('Missing required environment variables:', missing);
+    // Missing required environment variables
     
     if (process.env.NODE_ENV === 'production') {
       throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
@@ -209,11 +209,11 @@ export const validateEnvironment = (): void => {
   // Warn about development settings in production
   if (process.env.NODE_ENV === 'production') {
     if (squareEnv === 'sandbox') {
-      console.warn('⚠️ Running in production with Square sandbox environment');
+      // Running in production with Square sandbox environment
     }
     
     if (process.env.REACT_APP_BACKEND_URL?.includes('localhost')) {
-      console.warn('⚠️ Running in production with localhost backend URL');
+      // Running in production with localhost backend URL
     }
   }
 };
@@ -229,7 +229,7 @@ export const logSecurityEvent = (event: string, details?: any): void => {
   };
   
   if (process.env.NODE_ENV === 'development') {
-    console.warn('🔒 Security Event:', securityEvent);
+    // Security event logged
   }
   
   // In production, send to security monitoring service

@@ -3,7 +3,7 @@ import { CartItem, Product, StoreLocation, CartContextType, ProductVariant, Appl
 import { squareService } from '../services/squareService';
 import { toast } from 'react-hot-toast';
 import { calculateCartSubtotal } from '../utils/priceCalculations';
-import { SUCCESS_MESSAGES, ERROR_MESSAGES, DEFAULT_PREPARATION_TIME, ORDER_PROCESSING_BUFFER } from '../config/constants';
+import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../config/constants';
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -68,7 +68,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         }
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('Error initializing cart:', error);
+          // Error initializing cart
         }
         // Fallback to empty locations array if Square API fails
         setStoreLocations([]);
@@ -156,7 +156,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         }
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('Error applying automatic discounts:', error);
+          // Error applying automatic discounts
         }
         // Don't show error to user as this is background functionality
       }
@@ -191,13 +191,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
           if (Array.isArray(selectedValue)) {
             selectedValue.forEach(optionValue => {
               const option = variant.options.find(opt => opt.name === optionValue);
-              if (option && option.price) {
+              if (option && option.price !== undefined) {
                 totalPrice += option.price;
               }
             });
           } else {
             const option = variant.options.find(opt => opt.name === selectedValue);
-            if (option && option.price) {
+            if (option && option.price !== undefined) {
               totalPrice += option.price;
             }
           }
@@ -331,7 +331,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error applying discount:', error);
+        // Error applying discount
       }
       toast.error('Failed to apply discount code');
       return false;
@@ -347,22 +347,14 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [appliedDiscounts]);
 
   const getEstimatedPickupTime = useCallback(() => {
-    if (!selectedLocation || items.length === 0) return null;
+    // Only return the customer's selected pickup time
+    if (selectedPickupDate && selectedPickupTime) {
+      return new Date(`${selectedPickupDate}T${selectedPickupTime}`);
+    }
     
-    // Base preparation time from constants
-    let prepTime = DEFAULT_PREPARATION_TIME;
-    
-    // Add 2 minutes per item
-    prepTime += items.reduce((total, item) => total + (item.quantity * 2), 0);
-    
-    // Add buffer for order processing from constants
-    prepTime += ORDER_PROCESSING_BUFFER;
-    
-    const now = new Date();
-    const pickupTime = new Date(now.getTime() + prepTime * 60000);
-    
-    return pickupTime;
-  }, [selectedLocation, items]);
+    // Return null if no pickup time is selected
+     return null;
+   }, [selectedPickupDate, selectedPickupTime]);
 
   const value: CartContextType = useMemo(() => ({
     items,
