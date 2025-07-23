@@ -28,18 +28,21 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
   // Helper function to get local date string (YYYY-MM-DD)
   const getLocalDateString = (date: Date = new Date()) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    // Create a new date to avoid timezone issues
+    const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, '0');
+    const day = String(localDate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
 
   // Initialize current week to start from today
   useEffect(() => {
     const today = new Date();
-    const dayOfWeek = today.getDay();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - dayOfWeek);
+    startOfWeek.setHours(0, 0, 0, 0); // Reset time to start of day
     setCurrentWeekStart(startOfWeek);
   }, []);
 
@@ -81,18 +84,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     const date = new Date(tempSelectedDate);
     const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     
-    // Use fallback hours if no store hours are available
-    const fallbackHours = {
-      monday: { open: '07:00', close: '19:00', closed: false },
-      tuesday: { open: '07:00', close: '19:00', closed: false },
-      wednesday: { open: '07:00', close: '19:00', closed: false },
-      thursday: { open: '07:00', close: '19:00', closed: false },
-      friday: { open: '07:00', close: '19:00', closed: false },
-      saturday: { open: '08:00', close: '18:00', closed: false },
-      sunday: { open: '09:00', close: '17:00', closed: false }
-    };
-    
-    const hours = storeHours?.[dayName] || fallbackHours[dayName as keyof typeof fallbackHours];
+    // Only use store hours from Square - no fallback hours
+    const hours = storeHours?.[dayName];
 
     if (!hours || hours.closed) {
       setAvailableTimes([]);
@@ -103,8 +96,21 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     const [openHour, openMinute] = hours.open.split(':').map(Number);
     const [closeHour, closeMinute] = hours.close.split(':').map(Number);
     
+    // Validate hours are reasonable
+    if (openHour < 0 || openHour >= 24 || closeHour < 0 || closeHour >= 24 || 
+        openMinute < 0 || openMinute >= 60 || closeMinute < 0 || closeMinute >= 60) {
+      setAvailableTimes([]);
+      return;
+    }
+    
     const openTime = openHour * 60 + openMinute;
     const closeTime = closeHour * 60 + closeMinute;
+    
+    // Ensure close time is after open time
+    if (closeTime <= openTime) {
+      setAvailableTimes([]);
+      return;
+    }
     
     const now = new Date();
     const isToday = tempSelectedDate === getLocalDateString(now);
@@ -115,16 +121,21 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     for (let time = openTime; time < closeTime; time += 15) {
       const hour = Math.floor(time / 60);
       const minute = time % 60;
+      
+      // Ensure we don't go beyond 24 hours or create invalid times
+      if (hour >= 24) break;
+      
       const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
       
-      // For today, only skip times that have already passed
-      if (isToday) {
-        const selectedDateTime = new Date(tempSelectedDate + 'T' + timeString);
-        const timeDiff = selectedDateTime.getTime() - now.getTime();
-        
-        if (timeDiff >= 0) { // Allow immediate pickup
-          times.push(timeString);
-        }
+      // For today, only show times that haven't passed yet with a 15-minute prep time
+       if (isToday) {
+         const selectedDateTime = new Date(tempSelectedDate + 'T' + timeString);
+         const timeDiff = selectedDateTime.getTime() - now.getTime();
+         const fifteenMinutes = 15 * 60 * 1000; // 15 minutes in milliseconds
+         
+         if (timeDiff >= fifteenMinutes) { // Require 15-minute prep time
+           times.push(timeString);
+         }
       } else {
         // For future dates, show all available times within store hours
         times.push(timeString);
@@ -330,8 +341,10 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
             const hours = storeHours?.[dayName];
             const isClosed = !hours || hours.closed;
             const isSelected = tempSelectedDate === date;
-            const isToday = date === getLocalDateString();
-            const isPast = new Date(date) < new Date(getLocalDateString());
+            const today = new Date();
+            const todayString = getLocalDateString(today);
+            const isToday = date === todayString;
+            const isPast = date < todayString;
             
             return (
               <button

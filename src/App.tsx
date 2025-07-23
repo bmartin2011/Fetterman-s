@@ -23,6 +23,7 @@ const CheckoutSuccess = React.lazy(() => import('./pages/CheckoutSuccess'));
 const CheckoutCancel = React.lazy(() => import('./pages/CheckoutCancel'));
 const AboutPage = React.lazy(() => import('./pages/AboutPage'));
 const WaiverFormPage = React.lazy(() => import('./pages/WaiverFormPage'));
+const AccessibilityPage = React.lazy(() => import('./pages/AccessibilityPage'));
 const MenuPage = React.lazy(() => import('./pages/MenuPage'));
 const BreakfastMenuPage = React.lazy(() => import('./pages/BreakfastMenuPage'));
 const DeliMenuPage = React.lazy(() => import('./pages/DeliMenuPage'));
@@ -90,6 +91,7 @@ function App() {
                   <Route path="/products" element={<ProductsPage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/waiver-form" element={<WaiverFormPage />} />
+                  <Route path="/accessibility" element={<AccessibilityPage />} />
                   <Route path="/cart" element={<CartPage />} />
                   <Route path="/checkout" element={<CheckoutPage />} />
                   

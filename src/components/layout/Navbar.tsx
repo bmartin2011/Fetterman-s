@@ -153,6 +153,13 @@ const Navbar: React.FC = () => {
             >
               Waiver/Form
             </Link>
+            <Link 
+              to="/accessibility" 
+              className="text-gray-900 hover:text-emerald-700 font-medium transition-colors"
+              aria-label="Navigate to Accessibility page"
+            >
+              Accessibility
+            </Link>
           </div>
 
           {/* Right Side Icons */}
@@ -303,6 +310,15 @@ const Navbar: React.FC = () => {
                 aria-label="Navigate to Waiver/Form page"
               >
                 Waiver/Form
+              </Link>
+              <Link 
+                to="/accessibility" 
+                className="text-gray-900 hover:text-emerald-700 font-medium transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+                role="menuitem"
+                aria-label="Navigate to Accessibility page"
+              >
+                Accessibility
               </Link>
             </div>
           </div>

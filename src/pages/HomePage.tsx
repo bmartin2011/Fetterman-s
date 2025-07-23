@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, Star, ArrowRight, Phone, Coffee, IceCream, Sandwich, Zap } from 'lucide-react';
+import { MapPin, Clock, Star, ArrowRight, Phone, Coffee, IceCream, Sandwich, Zap, Mail } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import LocationSelector from '../components/common/LocationSelector';
 
@@ -358,6 +358,8 @@ const HomePage: React.FC = () => {
           </div>
         </section>
 
+
+
         {/* Store Locations Section */}
         <section 
           className="py-24 bg-gradient-to-br from-emerald-900 via-green-800 to-forest-900 relative overflow-hidden"
@@ -400,6 +402,40 @@ const HomePage: React.FC = () => {
                   return phone.replace(/\D/g, '');
                 };
                 
+                // Format time to 12-hour format
+                const formatTime = (time: string) => {
+                  if (!time) return '';
+                  
+                  // Handle different time formats
+                  let hour: number, minute: number;
+                  
+                  if (time.includes(':')) {
+                    // Format: "HH:MM" or "H:MM"
+                    const [h, m] = time.split(':');
+                    hour = parseInt(h);
+                    minute = parseInt(m);
+                  } else {
+                    // Format: "HHMM" or "HMM"
+                    const timeStr = time.replace(/\D/g, ''); // Remove non-digits
+                    if (timeStr.length === 4) {
+                      hour = parseInt(timeStr.substring(0, 2));
+                      minute = parseInt(timeStr.substring(2));
+                    } else if (timeStr.length === 3) {
+                      hour = parseInt(timeStr.substring(0, 1));
+                      minute = parseInt(timeStr.substring(1));
+                    } else {
+                      return time; // Return original if can't parse
+                    }
+                  }
+                  
+                  // Convert to 12-hour format
+                  const period = hour >= 12 ? 'PM' : 'AM';
+                  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+                  const displayMinute = minute.toString().padStart(2, '0');
+                  
+                  return `${displayHour}:${displayMinute} ${period}`;
+                };
+                
                 // Format hours for display
                 const formatHours = (hours: { [key: string]: { open: string; close: string; closed?: boolean } }) => {
                   const daysOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -412,7 +448,7 @@ const HomePage: React.FC = () => {
                   
                   daysOrder.forEach(day => {
                     const dayHours = hours[day];
-                    const hoursStr = dayHours?.closed ? 'Closed' : `${dayHours?.open || ''} - ${dayHours?.close || ''}`;
+                    const hoursStr = dayHours?.closed ? 'Closed' : `${formatTime(dayHours?.open || '')} - ${formatTime(dayHours?.close || '')}`;
                     
                     if (hoursStr === currentHours && currentGroup.length > 0) {
                       currentGroup.push(dayAbbr[day as keyof typeof dayAbbr]);
@@ -460,6 +496,16 @@ const HomePage: React.FC = () => {
                             aria-label={`Call ${location.name} location at ${formatPhoneForDisplay(location.phone)}`}
                           >
                             {formatPhoneForDisplay(location.phone)}
+                          </a>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <Mail className="w-6 h-6 text-emerald-300" aria-hidden="true" />
+                          <a 
+                            href={`mailto:${location.name.toLowerCase().includes('creekside') ? 'fettermanscreekside@gmail.com' : 'fettermansplattecity@gmail.com'}`}
+                            className="text-white hover:text-emerald-200 transition-colors text-base font-medium btn-focus underline-offset-4 hover:underline"
+                            aria-label={`Send email to ${location.name} location`}
+                          >
+                            {location.name.toLowerCase().includes('creekside') ? 'fettermanscreekside@gmail.com' : 'fettermansplattecity@gmail.com'}
                           </a>
                         </div>
                         <div className="flex items-start gap-4">

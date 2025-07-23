@@ -264,17 +264,41 @@ app.post('/api/square/products', async (req, res) => {
     
     console.log('Fetching products with request body:', JSON.stringify(requestBody, null, 2));
     
-    const data = await makeSquareRequest('/catalog/search', {
-      method: 'POST',
-      body: JSON.stringify(requestBody)
-    });
+    // Fetch both products and categories to check visibility
+    const [productsData, categoriesData] = await Promise.all([
+      makeSquareRequest('/catalog/search', {
+        method: 'POST',
+        body: JSON.stringify(requestBody)
+      }),
+      makeSquareRequest('/catalog/search', {
+        method: 'POST',
+        body: JSON.stringify({
+          object_types: ['CATEGORY'],
+          include_deleted_objects: false,
+          include_related_objects: true
+        })
+      })
+    ]);
     
-    // Additional filtering for archived items (Square API should handle this with include_deleted_objects: false)
-    // But we'll keep this as a safety net
-    if (data.objects) {
-      const originalCount = data.objects.length;
+    // Create a set of hidden category IDs for quick lookup
+    const hiddenCategoryIds = new Set();
+    if (categoriesData.objects) {
+      categoriesData.objects.forEach(category => {
+        if (category.type === 'CATEGORY' && category.category_data) {
+          const categoryData = category.category_data;
+          if (categoryData.online_visibility === false) {
+            hiddenCategoryIds.add(category.id);
+            console.log(`Hidden category found: ${categoryData.name} (${category.id})`);
+          }
+        }
+      });
+    }
+    
+    // Additional filtering for archived items and visibility
+    if (productsData.objects) {
+      const originalCount = productsData.objects.length;
       
-      data.objects = data.objects.filter(item => {
+      productsData.objects = productsData.objects.filter(item => {
         if (item.type !== 'ITEM' || !item.item_data) {
           return true; // Keep non-item objects
         }
@@ -287,15 +311,37 @@ app.post('/api/square/products', async (req, res) => {
           return false;
         }
         
+        // Filter out items with visibility set to 'PRIVATE'
+        if (itemData.visibility === 'PRIVATE') {
+          console.log(`Filtering out private item: ${itemData.name}`);
+          return false;
+        }
+        
+        // Filter out items that belong to hidden categories
+        if (itemData.categories) {
+          const itemCategoryIds = itemData.categories.map(cat => cat.id || cat);
+          const belongsToHiddenCategory = itemCategoryIds.some(catId => hiddenCategoryIds.has(catId));
+          if (belongsToHiddenCategory) {
+            console.log(`Filtering out item in hidden category: ${itemData.name}`);
+            return false;
+          }
+        }
+        
+        // Also check legacy category_id field
+        if (itemData.category_id && hiddenCategoryIds.has(itemData.category_id)) {
+          console.log(`Filtering out item in hidden category (legacy): ${itemData.name}`);
+          return false;
+        }
+        
         return true;
       });
       
-      const filteredCount = data.objects.length;
-      console.log(`Products fetched: ${originalCount}, after filtering: ${filteredCount}`);
+      const filteredCount = productsData.objects.length;
+      console.log(`Products fetched: ${originalCount}, after visibility filtering: ${filteredCount}`);
       console.log('All products fetched - location filtering will be handled client-side');
     }
     
-    res.json(data);
+    res.json(productsData);
   } catch (error) {
     console.error('Error fetching products:', error);
     console.error('Full error details:', error);
@@ -319,6 +365,35 @@ app.post('/api/square/categories', async (req, res) => {
       method: 'POST',
       body: JSON.stringify(requestBody)
     });
+    
+    // Filter out categories with online_visibility set to false
+    if (data.objects) {
+      const originalCount = data.objects.length;
+      console.log(`\n📂 Processing ${originalCount} categories for visibility filtering...`);
+      
+      data.objects = data.objects.filter(category => {
+        if (category.type !== 'CATEGORY' || !category.category_data) {
+          return true; // Keep non-category objects
+        }
+        
+        const categoryData = category.category_data;
+        console.log(`🔍 Checking category: ${categoryData.name} - online_visibility: ${categoryData.online_visibility}`);
+        
+        // Filter out categories that are explicitly hidden online
+        // online_visibility: false means hidden, true or undefined means visible
+        if (categoryData.online_visibility === false) {
+          console.log(`❌ Filtering out hidden category: ${categoryData.name}`);
+          return false;
+        }
+        
+        console.log(`✅ Keeping visible category: ${categoryData.name}`);
+        return true;
+      });
+      
+      const filteredCount = data.objects.length;
+      console.log(`\n📊 Categories summary: ${originalCount} fetched → ${filteredCount} after visibility filtering\n`);
+    }
+    
     res.json(data);
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -617,7 +692,9 @@ app.use((error, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  // Square proxy server running on port
-  // Server started
-  // Development environment info logged
+  console.log(`\n🚀 Square proxy server running on port ${PORT}`);
+  console.log(`📍 Environment: ${NODE_ENV}`);
+  console.log(`🔗 Square Environment: ${SQUARE_ENVIRONMENT}`);
+  console.log(`⏰ Server started at: ${new Date().toISOString()}`);
+  console.log(`\n✅ Server ready to accept requests\n`);
 });

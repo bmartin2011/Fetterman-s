@@ -241,18 +241,9 @@ export class SquareService {
 
   // Helper method to map Square business hours to our format
   private mapSquareBusinessHours(businessHours: any): { [key: string]: { open: string; close: string; closed?: boolean } } {
-    const defaultHours = {
-      monday: { open: '09:00', close: '17:00' },
-      tuesday: { open: '09:00', close: '17:00' },
-      wednesday: { open: '09:00', close: '17:00' },
-      thursday: { open: '09:00', close: '17:00' },
-      friday: { open: '09:00', close: '17:00' },
-      saturday: { open: '10:00', close: '16:00' },
-      sunday: { closed: true, open: '', close: '' }
-    };
-
+    // No fallback hours - rely only on Square API data
     if (!businessHours || !businessHours.periods) {
-      return defaultHours;
+      return {};
     }
 
     const mappedHours: { [key: string]: { open: string; close: string; closed?: boolean } } = {};

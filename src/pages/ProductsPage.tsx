@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Search, MapPin, ChevronDown, X } from 'lucide-react';
+import { Search, MapPin, ChevronDown, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import SimpleProductItem from '../components/products/SimpleProductItem';
 import LocationSelector from '../components/common/LocationSelector';
 import ProductDetailModal from '../components/products/ProductDetailModal';
@@ -32,6 +32,9 @@ const ProductsPage: React.FC = () => {
   const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
 
 
   // Cache for expensive computations
@@ -298,6 +301,27 @@ const ProductsPage: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [productsByCategory]);
 
+  // Initialize and update arrow visibility
+  useEffect(() => {
+    const updateArrowVisibility = () => {
+      if (categoryScrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+        setShowLeftArrow(scrollLeft > 0);
+        setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 1);
+      }
+    };
+
+    // Initial check
+    updateArrowVisibility();
+
+    // Add resize listener to update arrows when window size changes
+    window.addEventListener('resize', updateArrowVisibility);
+    
+    return () => {
+      window.removeEventListener('resize', updateArrowVisibility);
+    };
+  }, [productsByCategory, categoriesLoading]);
+
   if (loading && !dataCache.products) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -534,43 +558,85 @@ const ProductsPage: React.FC = () => {
         </div>
 
         {/* Category Navigation Tabs */}
-        <div className="bg-white rounded-lg shadow-sm mb-8 sticky top-0 z-10">
-          <div className="flex overflow-x-auto scrollbar-hide">
-            <button
-              onClick={() => {
-                setSelectedCategory('all');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`flex-shrink-0 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                selectedCategory === 'all'
-                  ? 'border-green-500 text-green-800'
-                  : 'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300'
-              }`}
+        <div className="relative mb-8 sticky top-0 z-10">
+          {/* Left Arrow - Outside the category bar */}
+           {showLeftArrow && (
+             <button
+               onClick={() => {
+                 if (categoryScrollRef.current) {
+                   categoryScrollRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+                 }
+               }}
+               className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-12 z-30 bg-green-600 hover:bg-green-700 text-white rounded-full p-2 shadow-lg transition-all duration-200 hover:scale-110"
+               aria-label="Scroll categories left"
+             >
+               <ChevronLeft className="w-5 h-5" />
+             </button>
+           )}
+           
+           {/* Right Arrow - Outside the category bar */}
+           {showRightArrow && (
+             <button
+               onClick={() => {
+                 if (categoryScrollRef.current) {
+                   categoryScrollRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+                 }
+               }}
+               className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-12 z-30 bg-green-600 hover:bg-green-700 text-white rounded-full p-2 shadow-lg transition-all duration-200 hover:scale-110"
+               aria-label="Scroll categories right"
+             >
+               <ChevronRight className="w-5 h-5" />
+             </button>
+           )}
+          
+          <div className="bg-white rounded-lg shadow-sm">
+            <div 
+              ref={categoryScrollRef}
+              className="flex overflow-x-auto scrollbar-hide scroll-smooth"
+              onScroll={() => {
+                if (categoryScrollRef.current) {
+                  const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+                  setShowLeftArrow(scrollLeft > 0);
+                  setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 1);
+                }
+               }}
             >
-              All
-            </button>
-            {categoriesLoading ? (
-              <div className="flex space-x-4">
-                <SkeletonLoader count={3} type="category" className="w-20" />
-              </div>
-            ) : (
-              <>
-                {/* Simple category navigation like HomePage */}
-                {Object.entries(productsByCategory).map(([categoryId, { category, products }]) => (
-                  <button
-                    key={categoryId}
-                    onClick={() => scrollToCategory(categoryId)}
-                    className={`flex-shrink-0 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                      selectedCategory === categoryId
-                        ? 'border-green-500 text-green-800'
-                        : 'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300'
-                    }`}
-                  >
-                    {category.name} ({products.length})
-                  </button>
-                ))}
-              </>
-            )}
+              <button
+                onClick={() => {
+                  setSelectedCategory('all');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`flex-shrink-0 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  selectedCategory === 'all'
+                    ? 'border-green-500 text-green-800'
+                    : 'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300'
+                }`}
+              >
+                All
+              </button>
+              {categoriesLoading ? (
+                <div className="flex space-x-4">
+                  <SkeletonLoader count={3} type="category" className="w-20" />
+                </div>
+              ) : (
+                <>
+                  {/* Simple category navigation like HomePage */}
+                  {Object.entries(productsByCategory).map(([categoryId, { category, products }]) => (
+                    <button
+                      key={categoryId}
+                      onClick={() => scrollToCategory(categoryId)}
+                      className={`flex-shrink-0 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                        selectedCategory === categoryId
+                          ? 'border-green-500 text-green-800'
+                          : 'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300'
+                      }`}
+                    >
+                      {category.name} ({products.length})
+                    </button>
+                  ))}
+                </>
+              )}
+            </div>
           </div>
         </div>
 

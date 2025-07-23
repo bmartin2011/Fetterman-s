@@ -1,10 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Coffee, Clock } from 'lucide-react';
 import ImageModal from '../components/common/ImageModal';
+import { squareService } from '../services/squareService';
+import { StoreLocation } from '../types';
 
 const BreakfastMenuPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [storeHours, setStoreHours] = useState<{ [key: string]: { open: string; close: string; closed?: boolean } } | null>(null);
+  const [isLoadingHours, setIsLoadingHours] = useState(true);
+
+  useEffect(() => {
+    const fetchStoreHours = async () => {
+      try {
+        const locations = await squareService.getSquareLocations();
+        if (locations.length > 0) {
+          // Use the first location's hours (main location)
+          setStoreHours(locations[0].hours);
+        }
+      } catch (error) {
+        console.error('Error fetching store hours:', error);
+      } finally {
+        setIsLoadingHours(false);
+      }
+    };
+
+    fetchStoreHours();
+  }, []);
+
+  const formatTime = (time: string) => {
+    if (!time) return '';
+    const [hour, minute] = time.split(':').map(Number);
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${displayHour}:${minute.toString().padStart(2, '0')}${period.toLowerCase()}`;
+  };
+
+  const formatHours = (hours: { [key: string]: { open: string; close: string; closed?: boolean } }) => {
+    const daysOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    const dayAbbr = { monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu', friday: 'Fri', saturday: 'Sat', sunday: 'Sun' };
+    
+    // Group consecutive days with same hours
+    const groupedHours: string[] = [];
+    let currentGroup: string[] = [];
+    let currentHours = '';
+    
+    daysOrder.forEach(day => {
+      const dayHours = hours[day];
+      const hoursStr = dayHours?.closed ? 'Closed' : `${formatTime(dayHours?.open || '')} - ${formatTime(dayHours?.close || '')}`;
+      
+      if (hoursStr === currentHours && currentGroup.length > 0) {
+        currentGroup.push(dayAbbr[day as keyof typeof dayAbbr]);
+      } else {
+        if (currentGroup.length > 0) {
+          const groupStr = currentGroup.length === 1 
+            ? currentGroup[0] 
+            : `${currentGroup[0]}-${currentGroup[currentGroup.length - 1]}`;
+          groupedHours.push(`${groupStr}: ${currentHours}`);
+        }
+        currentGroup = [dayAbbr[day as keyof typeof dayAbbr]];
+        currentHours = hoursStr;
+      }
+    });
+    
+    // Add the last group
+    if (currentGroup.length > 0) {
+      const groupStr = currentGroup.length === 1 
+        ? currentGroup[0] 
+        : `${currentGroup[0]}-${currentGroup[currentGroup.length - 1]}`;
+      groupedHours.push(`${groupStr}: ${currentHours}`);
+    }
+    
+    return groupedHours;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -87,11 +155,20 @@ const BreakfastMenuPage: React.FC = () => {
         {/* Hours Information */}
         <div className="bg-white rounded-lg shadow-sm p-6 text-center">
           <h3 className="text-xl font-bold text-gray-900 mb-4">
-            Hours
+            Store Hours
           </h3>
           <div className="space-y-2 text-gray-600">
-            <p><strong className="text-gray-900">Mon-Fri:</strong> 7:00am - 8:00pm</p>
-            <p><strong className="text-gray-900">Sat:</strong> 7:30am - 8:00pm</p>
+            {isLoadingHours ? (
+              <p>Loading hours...</p>
+            ) : storeHours && Object.keys(storeHours).length > 0 ? (
+              formatHours(storeHours).map((hourStr, index) => (
+                <p key={index}>
+                  <strong className="text-gray-900">{hourStr.split(':')[0]}:</strong> {hourStr.split(':').slice(1).join(':')}
+                </p>
+              ))
+            ) : (
+              <p>Hours not available. Please contact the store for current hours.</p>
+            )}
           </div>
         </div>
 

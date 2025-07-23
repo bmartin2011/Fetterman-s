@@ -1,10 +1,11 @@
 // Service Worker for caching strategies and offline support
 
-const CACHE_NAME = 'fettermans-v2'; // Updated version to force cache refresh
-const STATIC_CACHE = 'static-v2';
-const DYNAMIC_CACHE = 'dynamic-v2';
-const IMAGE_CACHE = 'images-v2';
-const API_CACHE = 'api-v2';
+const CACHE_VERSION = '1753300698'; // Increment this version number to force cache refresh
+const CACHE_NAME = `fettermans-v${CACHE_VERSION}`;
+const STATIC_CACHE = `static-v${CACHE_VERSION}`;
+const DYNAMIC_CACHE = `dynamic-v${CACHE_VERSION}`;
+const IMAGE_CACHE = `images-v${CACHE_VERSION}`;
+const API_CACHE = `api-v${CACHE_VERSION}`;
 
 // Check if we're in development mode
 const isDevelopment = self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
@@ -27,6 +28,8 @@ const API_ENDPOINTS = [
 
 // Install event - cache static assets (production only)
 self.addEventListener('install', (event) => {
+  console.log(`Service Worker: Installing new version with cache version ${CACHE_VERSION}`);
+  
   if (isDevelopment) {
     // Service Worker: Installing in development mode - skipping cache
     event.waitUntil(self.skipWaiting());
@@ -43,6 +46,7 @@ self.addEventListener('install', (event) => {
       })
       .then(() => {
         // Service Worker: Static assets cached
+        console.log('Service Worker: Static assets cached successfully');
         return self.skipWaiting();
       })
       .catch((error) => {
@@ -51,39 +55,52 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate event - clean up old caches
-self.addEventListener('activate', (event) => {
-  if (isDevelopment) {
-    // Service Worker: Activating in development mode - clearing ALL caches
-  } else {
-    // Service Worker: Activating in production mode
+// Listen for the skipWaiting message
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('Service Worker: Received skip waiting message, activating immediately');
+    self.skipWaiting();
   }
+});
+
+// Activate event - clean up old caches and force update
+self.addEventListener('activate', (event) => {
+  // Always log activation in production to help with debugging
+  console.log(`Service Worker: Activating new version with cache version ${CACHE_VERSION}`);
   
   event.waitUntil(
     caches.keys()
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            // In development, clear ALL caches to prevent stale data
-            // In production, only clear old/unused caches
-            if (isDevelopment || (cacheName !== STATIC_CACHE && 
-                cacheName !== DYNAMIC_CACHE && 
-                cacheName !== IMAGE_CACHE && 
-                cacheName !== API_CACHE)) {
-              // Service Worker: Deleting cache
+            // Always clear old caches when a new service worker activates
+            // This ensures users get fresh content after an update
+            if (!cacheName.includes(CACHE_VERSION)) {
+              console.log(`Service Worker: Deleting old cache ${cacheName}`);
               return caches.delete(cacheName);
             }
           })
         );
       })
       .then(() => {
-        // Service Worker: Activated and caches processed
-        return self.clients.claim();
+        console.log('Service Worker: Now controlling all clients');
+        
+        // Force all clients to update
+        return self.clients.matchAll().then(clients => {
+          clients.forEach(client => {
+            // Send a message to the client to refresh
+            client.postMessage({
+              type: 'CACHE_UPDATED',
+              version: CACHE_VERSION
+            });
+          });
+          return self.clients.claim();
+        });
       })
   );
 });
 
-// Fetch event - implement caching strategies
+// Fetch event - handle caching strategies
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -98,6 +115,27 @@ self.addEventListener('fetch', (event) => {
     return; // Let all requests go through normally without caching in development
   }
 
+  // Always use network-first for HTML and main application files
+  // This ensures users always get the latest version of the app shell
+  if (request.url.endsWith('.html') || request.url === '/' || url.pathname === '/') {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          // Cache the latest version
+          const responseToCache = response.clone();
+          caches.open(STATIC_CACHE).then(cache => {
+            cache.put(request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => {
+          // Fallback to cache if network fails
+          return caches.match(request);
+        })
+    );
+    return;
+  }
+  
   // Handle different types of requests with appropriate caching strategies (production only)
   if (isStaticAsset(url)) {
     event.respondWith(cacheFirst(request, STATIC_CACHE));

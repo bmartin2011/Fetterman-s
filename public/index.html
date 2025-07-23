@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Chewy&family=Comfortaa:wght@300..700&family=DM+Serif+Display:ital@0;1&family=League+Spartan:wght@100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nerko+One&family=Noticia+Text:ital,wght@0,400;0,700;1,400;1,700&family=Oswald:wght@200..700&family=Pacifico&family=Roboto:ital,wght@0,100..900;1,100..900&family=Shrikhand&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=WDXL+Lubrifont+TC&display=swap" rel="stylesheet">
     <title>Fetterman's</title>
     <!-- Square Web Payments SDK -->
-    <script type="text/javascript" src="https://sandbox-web.squarecdn.com/v1/square.js"></script>
+    <script type="text/javascript" src="https://sandbox-web.squarecdn.com/v1/square.js?v=1753240102556"></script>
     <!-- For production, use: https://web.squarecdn.com/v1/square.js -->
   </head>
   <body>
@@ -39,20 +39,86 @@
     </noscript>
     <div id="root"></div>
     
-    <!-- Service Worker Registration -->
+    <!-- Service Worker Registration with Version Check -->
     <script>
+      // Current frontend version - increment this when deploying new versions
+      const FRONTEND_VERSION = '1753300698537';
+      
+      // Store the version in localStorage to detect changes
+      const storedVersion = localStorage.getItem('app_version');
+      const isNewVersion = storedVersion !== FRONTEND_VERSION;
+      
+      // Force refresh if version has changed
+      if (storedVersion && isNewVersion) {
+        // Clear all caches to ensure fresh content
+        if ('caches' in window) {
+          caches.keys().then(cacheNames => {
+            cacheNames.forEach(cacheName => {
+              caches.delete(cacheName);
+            });
+          });
+        }
+        
+        // Update stored version
+        localStorage.setItem('app_version', FRONTEND_VERSION);
+        
+        // Force page reload to get fresh content
+        window.location.reload(true);
+      } else if (!storedVersion) {
+        // First visit, just store the version
+        localStorage.setItem('app_version', FRONTEND_VERSION);
+      }
+      
+      // Register service worker
       if ('serviceWorker' in navigator) {
+        // Listen for messages from the service worker
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data && event.data.type === 'CACHE_UPDATED') {
+            console.log(`Received cache update notification for version ${event.data.version}`);
+            // Store the new version
+            localStorage.setItem('app_version', FRONTEND_VERSION);
+            // Force reload to get fresh content
+            window.location.reload(true);
+          }
+        });
+        
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
             .then((registration) => {
+              // Check for updates every hour
+              setInterval(() => {
+                registration.update();
+              }, 60 * 60 * 1000);
+              
+              // Check for waiting service worker
+              if (registration.waiting) {
+                console.log('New service worker waiting');
+                // Force update if there's a waiting service worker
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+              }
+              
+              // Listen for new service workers
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                console.log('New service worker installing');
+                
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('New service worker installed and ready');
+                    // Force the new service worker to activate
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  }
+                });
+              });
+              
               if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          console.log('SW registered: ', registration);
-        }
+                console.log('SW registered: ', registration);
+              }
             })
             .catch((registrationError) => {
               if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          console.log('SW registration failed: ', registrationError);
-        }
+                console.log('SW registration failed: ', registrationError);
+              }
             });
         });
       }

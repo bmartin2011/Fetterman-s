@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StoreLocation } from '../../types';
 import { useCart } from '../../contexts/CartContext';
-import { MapPin, Clock, Phone, X } from 'lucide-react';
+import { MapPin, Clock, Phone, Mail, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface LocationSelectorProps {
@@ -40,7 +40,40 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       return 'Closed Today';
     }
     
-    return `${todayHours?.open} - ${todayHours?.close}`;
+    const formatTime = (time: string) => {
+      if (!time) return '';
+      
+      // Handle different time formats
+      let hour: number, minute: number;
+      
+      if (time.includes(':')) {
+        // Format: "HH:MM" or "H:MM"
+        const [h, m] = time.split(':');
+        hour = parseInt(h);
+        minute = parseInt(m);
+      } else {
+        // Format: "HHMM" or "HMM"
+        const timeStr = time.replace(/\D/g, ''); // Remove non-digits
+        if (timeStr.length === 4) {
+          hour = parseInt(timeStr.substring(0, 2));
+          minute = parseInt(timeStr.substring(2));
+        } else if (timeStr.length === 3) {
+          hour = parseInt(timeStr.substring(0, 1));
+          minute = parseInt(timeStr.substring(1));
+        } else {
+          return time; // Return original if can't parse
+        }
+      }
+      
+      // Convert to 12-hour format
+      const period = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+      const displayMinute = minute.toString().padStart(2, '0');
+      
+      return `${displayHour}:${displayMinute} ${period}`;
+    };
+    
+    return `${formatTime(todayHours?.open || '')} - ${formatTime(todayHours?.close || '')}`;
   };
 
   const isCurrentlyOpen = (location: StoreLocation) => {
@@ -131,20 +164,38 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
                         </span>
                       </div>
                       
-                      <div className="flex items-center gap-2 text-green-800">
+                      <div className="flex items-center gap-2 text-green-800 mb-2">
                         <Phone className="w-4 h-4" />
                         <span className="text-sm font-medium">{location.phone}</span>
                       </div>
                       
-                      {location.features.length > 0 && (
+                      <div className="flex items-center gap-2 text-green-800">
+                        <Mail className="w-4 h-4" />
+                        <span className="text-sm font-medium">
+                          {location.name.toLowerCase().includes('creekside') 
+                            ? 'fettermanscreekside@gmail.com'
+                            : 'fettermansplattecity@gmail.com'
+                          }
+                        </span>
+                      </div>
+                      
+                      {location.features.filter(feature => 
+                        feature !== 'CREDIT_CARD_PROCESSING' && 
+                        feature !== 'AUTOMATIC_TRANSFERS'
+                      ).length > 0 && (
                         <div className="mt-3">
                           <div className="flex flex-wrap gap-2">
-                            {location.features.map((feature) => (
+                            {location.features
+                              .filter(feature => 
+                                feature !== 'CREDIT_CARD_PROCESSING' && 
+                                feature !== 'AUTOMATIC_TRANSFERS'
+                              )
+                              .map((feature) => (
                               <span
                                 key={feature}
                                 className="px-3 py-1 bg-green-200 text-green-900 text-xs rounded-full font-medium"
                               >
-                                {feature.replace('-', ' ')}
+                                {feature.replace(/[_-]/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
                               </span>
                             ))}
                           </div>

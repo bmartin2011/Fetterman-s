@@ -81,13 +81,22 @@ const Footer: React.FC<FooterProps> = ({ id }) => {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="w-4 h-4 text-primary-400" aria-hidden="true" />
-                <a 
-                  href="mailto:fettermansdeli@gmail.com" 
-                  className="text-gray-300 hover:text-white text-sm transition-colors"
-                  aria-label="Send email to fettermansdeli@gmail.com"
-                >
-                  fettermansdeli@gmail.com
-                </a>
+                <div className="space-y-1">
+                  <a 
+                    href="mailto:fettermanscreekside@gmail.com" 
+                    className="block text-gray-300 hover:text-white text-sm transition-colors"
+                    aria-label="Send email to Creekside location"
+                  >
+                    fettermanscreekside@gmail.com
+                  </a>
+                  <a 
+                    href="mailto:fettermansplattecity@gmail.com" 
+                    className="block text-gray-300 hover:text-white text-sm transition-colors"
+                    aria-label="Send email to Platte City location"
+                  >
+                    fettermansplattecity@gmail.com
+                  </a>
+                </div>
               </div>
             </div>
           </div>

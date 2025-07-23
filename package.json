@@ -26,8 +26,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
-    "build:prod": "cross-env GENERATE_SOURCEMAP=false react-scripts build",
+    "build": "react-scripts build && node public/cache-bust.js",
+    "build:prod": "cross-env GENERATE_SOURCEMAP=false react-scripts build && node public/cache-bust.js",
     "build:analyze": "npm run build && npx serve -s build",
     "test": "react-scripts test",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
@@ -46,7 +46,8 @@
     "security:fix": "npm audit fix",
     "health:check": "curl -f http://localhost:3001/api/health || exit 1",
     "health:detailed": "curl -f http://localhost:3001/api/health/detailed || exit 1",
-    "production:validate": "npm run lint && npm run type-check && npm run security:audit && npm run test:coverage"
+    "production:validate": "npm run lint && npm run type-check && npm run security:audit && npm run test:coverage",
+    "cache:clear": "node public/cache-bust.js"
   },
   "browserslist": {
     "production": [
