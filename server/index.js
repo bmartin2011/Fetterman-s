@@ -639,7 +639,7 @@ app.post('/api/square/create-checkout', async (req, res) => {
             recipient: {
               display_name: customer?.name || 'Customer'
             },
-            pickup_at: new Date(`${pickupDate}T${pickupTime}`).toISOString(),
+            pickup_at: new Date(`${pickupDate}T${pickupTime}:00-05:00`).toISOString(), // EST timezone
             note: 'Order placed via online checkout'
           }
         }]
