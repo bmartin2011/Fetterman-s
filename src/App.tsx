@@ -32,6 +32,7 @@ const MeatCheeseMenuPage = React.lazy(() => import('./pages/MeatCheeseMenuPage')
 
 
 
+
 function App() {
   // Preload critical data on app initialization
   useEffect(() => {
@@ -101,6 +102,7 @@ function App() {
                   <Route path="/menu/deli" element={<DeliMenuPage />} />
                   <Route path="/menu/meat-cheese" element={<MeatCheeseMenuPage />} />
                   
+
 
                   {/* Checkout Routes */}
                   <Route path="/checkout/success" element={<CheckoutSuccess />} />

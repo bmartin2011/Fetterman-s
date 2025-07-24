@@ -429,6 +429,12 @@ export class SquareService {
 
       if (!orderResponse.ok) {
         const errorData = await orderResponse.json();
+        
+        // Handle store offline scenario
+        if (orderResponse.status === 503 && errorData.storeOffline) {
+          throw new Error('🚫 Online ordering is currently unavailable. Please try again later or contact us directly for assistance.');
+        }
+        
         throw new Error(`Square Order API error: ${errorData.errors?.[0]?.detail || orderResponse.statusText}`);
       }
 
@@ -500,6 +506,12 @@ export class SquareService {
 
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // Handle store offline scenario
+        if (response.status === 503 && errorData.storeOffline) {
+          throw new Error('🚫 Online ordering is currently unavailable. Please try again later or contact us directly for assistance.');
+        }
+        
         throw new Error(`Checkout creation failed: ${errorData.error || response.statusText}`);
       }
 
@@ -1420,6 +1432,8 @@ export class SquareService {
 
 
 
+
+
       // Build hierarchical structure
       const hierarchicalCategories = this.buildCategoryHierarchy(flatCategories);
 
@@ -1714,6 +1728,8 @@ export class SquareService {
     };
     return abbreviations[genericUnit] || genericUnit;
   }
+
+
 
   // Method to clear cache (useful for refreshing data)
   clearCache(): void {

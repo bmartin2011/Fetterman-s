@@ -355,6 +355,7 @@ app.post('/api/square/categories', async (req, res) => {
     // Use catalog/search endpoint for categories - fetch ALL categories to see hierarchy
     // Removed category_type filter to see all category types including parent/child relationships
     // Filter out deleted categories (archived filtering handled by include_deleted_objects)
+    // Include related objects for complete category data
     const requestBody = {
       object_types: ['CATEGORY'],
       include_deleted_objects: false,
@@ -483,8 +484,23 @@ app.post('/api/square/measurement-units', async (req, res) => {
   }
 });
 
+
+// Middleware to check if online store is enabled
+const checkStoreOnline = (req, res, next) => {
+  const storeOnline = process.env.STORE_ONLINE === 'true';
+  
+  if (!storeOnline) {
+    return res.status(503).json({ 
+      error: 'Online ordering is currently unavailable. Please try again later or contact us directly.',
+      storeOffline: true
+    });
+  }
+  
+  next();
+};
+
 // Create Square order
-app.post('/api/square/orders', async (req, res) => {
+app.post('/api/square/orders', checkStoreOnline, async (req, res) => {
   try {
     const orderData = req.body;
     
@@ -500,7 +516,7 @@ app.post('/api/square/orders', async (req, res) => {
 });
 
 // Process payment
-app.post('/api/square/payment', [
+app.post('/api/square/payment', checkStoreOnline, [
   body('token').notEmpty().withMessage('Payment token is required'),
   body('amount').isNumeric().withMessage('Amount must be a number'),
   body('orderId').optional().isString()
@@ -537,7 +553,7 @@ app.post('/api/square/payment', [
 });
 
 // Create Square Checkout (redirect to Square hosted page)
-app.post('/api/square/create-checkout', async (req, res) => {
+app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
   try {
     const { items, customerInfo, pickupLocation, appliedDiscounts, pickupDate, pickupTime } = req.body;
     // Handle both customer and customerInfo for backward compatibility
@@ -639,7 +655,7 @@ app.post('/api/square/create-checkout', async (req, res) => {
             recipient: {
               display_name: customer?.name || 'Customer'
             },
-            pickup_at: new Date(`${pickupDate}T${pickupTime}:00-05:00`).toISOString(), // EST timezone
+            pickup_at: `${pickupDate}T${pickupTime}:00`, // Send local date/time directly to Square
             note: 'Order placed via online checkout'
           }
         }]
@@ -682,6 +698,16 @@ app.post('/api/square/create-checkout', async (req, res) => {
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Store status check
+app.get('/api/store/status', (req, res) => {
+  const storeOnline = process.env.STORE_ONLINE === 'true';
+  res.json({ 
+    online: storeOnline,
+    status: storeOnline ? 'Online ordering available' : 'Online ordering disabled',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Error handling middleware

@@ -111,7 +111,154 @@ SQUARE_ACCESS_TOKEN=EAAAEOxxx[production-token]
 SQUARE_ENVIRONMENT=production
 NODE_ENV=production
 PORT=3001
+
+# Store Status Control
+# Set to 'true' to enable online ordering, 'false' to disable
+STORE_ONLINE=true
 ```
+
+## 🏪 Store Status Toggle Feature
+
+### How It Works
+The `STORE_ONLINE` environment variable provides centralized control over online ordering:
+
+- **`STORE_ONLINE=true`**: Online ordering is enabled
+- **`STORE_ONLINE=false`**: Online ordering is disabled with user-friendly message
+
+### Protected Endpoints
+The `checkStoreOnline` middleware protects these critical endpoints:
+- `/api/square/orders` - Order creation
+- `/api/square/payment` - Payment processing  
+- `/api/square/create-checkout` - Checkout initiation
+
+### Usage Scenarios
+- **Maintenance Mode**: Disable ordering during system updates
+- **Holiday Closures**: Turn off ordering during closed periods
+- **Emergency Situations**: Quickly disable ordering without code deployment
+- **Capacity Management**: Temporarily disable during high-demand periods
+
+### Implementation
+```javascript
+// Server middleware in server/index.js
+const checkStoreOnline = (req, res, next) => {
+  const storeOnline = process.env.STORE_ONLINE === 'true';
+  
+  if (!storeOnline) {
+    return res.status(503).json({ 
+      error: 'Online ordering is currently unavailable. Please try again later or contact us directly.',
+      storeOffline: true
+    });
+  }
+  
+  next();
+};
+```
+
+## 📅 Pickup Date & Time System
+
+### Current Implementation
+
+#### 1. Date & Time Selection (`DateTimePicker.tsx`)
+- **Available Dates**: Today + future dates (no past dates)
+- **Store Hours Integration**: Fetches hours from Square API
+- **Time Slots**: 15-minute intervals during store hours
+- **Preparation Buffer**: 15-minute minimum for same-day orders
+- **Validation**: Prevents selection of past times or closed periods
+
+#### 2. State Management (`CartContext.tsx`)
+- **Persistence**: Stored in `localStorage` for session continuity
+- **State Fields**: 
+  - `selectedPickupDate`: YYYY-MM-DD format
+  - `selectedPickupTime`: HH:MM format
+- **Methods**: `setPickupDateTime()`, `getEstimatedPickupTime()`
+
+#### 3. Validation Flow
+**Client-Side** (`CheckoutPage.tsx`):
+```javascript
+const validatePickupDateTime = () => {
+  if (!selectedPickupDate) {
+    toast.error('Please select a pickup date');
+    return false;
+  }
+  if (!selectedPickupTime) {
+    toast.error('Please select a pickup time');
+    return false;
+  }
+  return true;
+};
+```
+
+**Server-Side** (`server/index.js`):
+```javascript
+// Validates required pickup date and time
+if (!pickupDate || !pickupTime) {
+  return res.status(400).json({ 
+    error: 'Pickup date and time are required. Please select a pickup time before proceeding.' 
+  });
+}
+```
+
+#### 4. Square Integration
+- **Format**: Converts to ISO 8601 (`YYYY-MM-DDTHH:mm:ss`)
+- **Timezone**: Uses customer's local timezone
+- **Square Order**: Sent as `pickup_at` in fulfillment details
+
+### How Date & Time Selection Works
+
+1. **Customer Opens DateTimePicker**
+   - Component fetches store hours from Square API
+   - Displays current week with navigation
+   - Shows available dates (grays out past dates and closed days)
+
+2. **Date Selection**
+   - Customer clicks on available date
+   - System loads time slots for that date
+   - Applies store hours and preparation buffer
+
+3. **Time Selection**
+   - Shows 15-minute intervals during store hours
+   - For "Today": adds 15-minute preparation time
+   - For future dates: shows all available slots
+
+4. **Confirmation**
+   - Customer confirms date/time selection
+   - Values stored in cart context and localStorage
+   - Displayed in cart and checkout pages
+
+5. **Order Processing**
+   - Validated on both client and server
+   - Sent to Square API in proper format
+   - Included in order confirmation
+
+### Potential Improvements
+
+#### Timezone Handling
+**Current**: Uses customer's local timezone
+**Recommendation**: Consider store's timezone for consistency
+```javascript
+// Potential improvement
+const storeTimezone = 'America/New_York'; // Store's timezone
+const pickupTime = moment.tz(`${pickupDate} ${pickupTime}`, storeTimezone);
+```
+
+#### Holiday/Special Hours
+**Current**: Uses regular weekly schedule only
+**Recommendation**: Add special hours configuration
+```javascript
+// Potential feature
+const specialHours = {
+  '2024-12-25': 'closed', // Christmas
+  '2024-07-04': { open: '10:00', close: '15:00' } // July 4th
+};
+```
+
+#### Advanced Scheduling
+**Current**: Simple time slot system
+**Potential Features**:
+- Order capacity limits per time slot
+- Different preparation times by item type
+- Busy period warnings
+- Estimated wait times
 
 ## 📊 Post-Deployment Verification
 
@@ -119,11 +266,15 @@ PORT=3001
 - [ ] Menu loads correctly
 - [ ] Products display with images
 - [ ] Cart functionality works
+- [ ] Pickup date/time selection works
 - [ ] Checkout process completes
 - [ ] Payment processing successful
 - [ ] Order confirmation received
 - [ ] Discount codes apply correctly
 - [ ] Location selection works
+- [ ] Store status toggle works (test STORE_ONLINE=false)
+- [ ] Pickup time validation prevents past times
+- [ ] Store hours integration working
 
 ### Performance Tests
 - [ ] Lighthouse score > 90

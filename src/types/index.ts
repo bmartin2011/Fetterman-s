@@ -13,9 +13,12 @@ export interface Category {
   parentId?: string; // Square API: parent_category field - links to parent category ID
   subcategories?: Category[]; // Child categories - populated during hierarchy building
   level: number; // 0 for parent categories (shown in nav), 1+ for subcategories (shown in dropdowns)
+
   createdAt: string;
   updatedAt: string;
 }
+
+
 
 // Category Hierarchy Helper Types for Navigation
 export interface CategoryHierarchy {
