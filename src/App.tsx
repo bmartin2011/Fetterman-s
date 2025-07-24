@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 // Context Providers
 import { CartProvider } from './contexts/CartContext';
 import { CheckoutProvider } from './contexts/CheckoutContext';
+import { StoreStatusProvider, useStoreStatus } from './contexts/StoreStatusContext';
 
 // Components
 import Navbar from './components/layout/Navbar';
@@ -12,6 +13,7 @@ import Footer from './components/layout/Footer';
 import ScrollToTop from './components/common/ScrollToTop';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import SkeletonLoader from './components/SkeletonLoader';
+
 import { squareService } from './services/squareService';
 
 // Lazy-loaded Pages for Code Splitting
@@ -33,7 +35,10 @@ const MeatCheeseMenuPage = React.lazy(() => import('./pages/MeatCheeseMenuPage')
 
 
 
-function App() {
+function AppContent() {
+  // Store status management
+  const { isStoreOnline } = useStoreStatus();
+
   // Preload critical data on app initialization
   useEffect(() => {
     const preloadData = async () => {
@@ -186,6 +191,14 @@ function App() {
         </CheckoutProvider>
       </CartProvider>
     </ErrorBoundary>
+  );
+}
+
+function App() {
+  return (
+    <StoreStatusProvider>
+      <AppContent />
+    </StoreStatusProvider>
   );
 }
 

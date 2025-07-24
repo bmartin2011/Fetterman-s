@@ -79,7 +79,7 @@ export class SquareService {
     operation: string,
     expectedFields?: string[]
   ): Promise<T> {   
-    let lastError: Error;
+    let lastError: Error = new Error(`Failed after ${this.MAX_RETRIES} attempts: ${operation}`);
     
     for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
       try {
@@ -130,7 +130,7 @@ export class SquareService {
     
     // Track the error for monitoring
     trackError(lastError!, { operation, attempts: this.MAX_RETRIES });
-    throw lastError!;
+    throw new Error(lastError?.message || `Failed after ${this.MAX_RETRIES} attempts: ${operation}`);
   }
 
   // Validate API response structure

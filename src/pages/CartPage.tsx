@@ -6,6 +6,8 @@ import LocationSelector from '../components/common/LocationSelector';
 import DateTimePicker from '../components/common/DateTimePicker';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, ArrowLeft, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useStoreStatus } from '../contexts/StoreStatusContext';
+
 
 const CartPage: React.FC = () => {
   const { 
@@ -22,6 +24,7 @@ const CartPage: React.FC = () => {
     setPickupDateTime
   } = useCart();
   const navigate = useNavigate();
+  const { isStoreOnline } = useStoreStatus();
   const [isLoading, setIsLoading] = useState(false);
   const [showLocationSelector, setShowLocationSelector] = useState(false);
 
@@ -46,6 +49,12 @@ const CartPage: React.FC = () => {
   const handleCheckout = async () => {
     if (items.length === 0) {
       toast.error('Your cart is empty');
+      return;
+    }
+
+    // Check store status before proceeding
+    if (!isStoreOnline) {
+      toast.error('Sorry, the store is currently closed for online orders. Please try again later.');
       return;
     }
 
@@ -345,6 +354,8 @@ const CartPage: React.FC = () => {
         isOpen={showLocationSelector}
         onClose={() => setShowLocationSelector(false)}
       />
+      
+
     </div>
   );
 };

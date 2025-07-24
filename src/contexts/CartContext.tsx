@@ -4,6 +4,7 @@ import { squareService } from '../services/squareService';
 import { toast } from 'react-hot-toast';
 import { calculateCartSubtotal } from '../utils/priceCalculations';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../config/constants';
+import { useStoreStatus } from './StoreStatusContext';
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -20,6 +21,7 @@ interface CartProviderProps {
 }
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
+  const { isStoreOnline } = useStoreStatus();
   const [items, setItems] = useState<CartItem[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<StoreLocation | null>(null);
   const [storeLocations, setStoreLocations] = useState<StoreLocation[]>([]);
@@ -175,6 +177,12 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     } = {},
     specialInstructions?: string
   ) => {
+    // Check if store is online before allowing add to cart
+    if (!isStoreOnline) {
+      toast.error('Store is currently closed for online ordering. You can browse our menu but cannot add items to cart.');
+      return;
+    }
+
     if (!selectedLocation) {
       toast.error(ERROR_MESSAGES.LOCATION_REQUIRED);
       return;
@@ -224,7 +232,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
     setItems(prevItems => [...prevItems, cartItem]);
     toast.success(SUCCESS_MESSAGES.ITEM_ADDED_TO_CART);
-  }, [selectedLocation]);
+  }, [selectedLocation, isStoreOnline]);
 
   const removeFromCart = useCallback((itemId: string) => {
     setItems(items.filter(item => item.id !== itemId));

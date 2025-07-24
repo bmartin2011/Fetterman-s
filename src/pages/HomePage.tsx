@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, Star, ArrowRight, Phone, Coffee, IceCream, Sandwich, Zap, Mail } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
+import { useStoreStatus } from '../contexts/StoreStatusContext';
 import LocationSelector from '../components/common/LocationSelector';
+import StoreStatusModal from '../components/common/StoreStatusModal';
 
 import { Category, StoreLocation } from '../types';
 import { squareService } from '../services/squareService';
@@ -10,7 +12,9 @@ import { AriaLabels, ScreenReaderUtils, KeyboardUtils, useAnnouncement } from '.
 
 const HomePage: React.FC = () => {
   const { selectedLocation, setPickupLocation } = useCart();
+  const { isStoreOnline } = useStoreStatus();
   const [showLocationSelector, setShowLocationSelector] = useState(false);
+  const [showStoreStatusModal, setShowStoreStatusModal] = useState(false);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [storeLocations, setStoreLocations] = useState<StoreLocation[]>([]);
@@ -22,6 +26,13 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     announcePageChange('Fetterman\'s Homepage');
   }, [announcePageChange]);
+
+  // Show store status modal when store goes offline
+  useEffect(() => {
+    if (!isStoreOnline) {
+      setShowStoreStatusModal(true);
+    }
+  }, [isStoreOnline]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -547,6 +558,12 @@ const HomePage: React.FC = () => {
           handleLocationSelect(location);
           setShowLocationSelector(false);
         }}
+      />
+
+      {/* Store Status Modal - Only show when store is offline */}
+      <StoreStatusModal
+        isOpen={showStoreStatusModal && !isStoreOnline}
+        onClose={() => setShowStoreStatusModal(false)}
       />
     </div>
   );

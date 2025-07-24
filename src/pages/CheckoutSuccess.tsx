@@ -13,12 +13,29 @@ const CheckoutSuccess: React.FC = () => {
   const location = useLocation();
   const orderData = location.state as OrderState;
 
-  const formatTime = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    }).format(date);
+  const formatDateTime = (date: Date) => {
+    const today = new Date();
+    const pickupDate = new Date(date);
+    const isToday = today.toDateString() === pickupDate.toDateString();
+    
+    if (isToday) {
+      // For today's orders, show "Today at [time]"
+      return `Today at ${new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }).format(pickupDate)}`;
+    } else {
+      // For future orders, show full date and time
+      return new Intl.DateTimeFormat('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }).format(pickupDate);
+    }
   };
 
   return (
@@ -45,7 +62,7 @@ const CheckoutSuccess: React.FC = () => {
                 <Clock className="w-4 h-4 mr-1" />
                 Estimated Pickup:
               </span>
-              <span className="font-semibold">{formatTime(new Date(orderData.estimatedPickupTime))}</span>
+              <span className="font-semibold">{formatDateTime(new Date(orderData.estimatedPickupTime))}</span>
             </div>
           </div>
         )}

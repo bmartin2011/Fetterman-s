@@ -142,6 +142,15 @@ async function makeSquareRequest(endpoint, options = {}) {
 
 // Routes
 
+// Store status endpoint
+app.get('/api/store-status', (req, res) => {
+  const storeOnline = process.env.STORE_ONLINE === 'true';
+  res.json({
+    isOnline: storeOnline,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Basic health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({
@@ -655,7 +664,7 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
             recipient: {
               display_name: customer?.name || 'Customer'
             },
-            pickup_at: `${pickupDate}T${pickupTime}:00`, // Send local date/time directly to Square
+            pickup_at: `${pickupDate}T${pickupTime}:00-06:00`, // Central Time Zone (CST/CDT) - RFC 3339 format for Square
             note: 'Order placed via online checkout'
           }
         }]

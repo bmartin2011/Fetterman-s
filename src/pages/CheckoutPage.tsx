@@ -7,6 +7,7 @@ import DiscountCode from '../components/checkout/DiscountCode';
 import DateTimePicker from '../components/common/DateTimePicker';
 import { Validator } from '../utils/validation';
 import { trackError } from '../utils/performance';
+import { useStoreStatus } from '../contexts/StoreStatusContext';
 
 import { 
   CreditCard, 
@@ -50,6 +51,7 @@ const CheckoutPage: React.FC = () => {
     setPickupDateTime
   } = useCart();
   const navigate = useNavigate();
+  const { isStoreOnline, checkStoreStatus } = useStoreStatus();
   const [loading, setLoading] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('square-redirect');
   const [tipAmount, setTipAmount] = useState(0);
@@ -179,6 +181,12 @@ const CheckoutPage: React.FC = () => {
   const handleSquareCheckoutRedirect = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Check store status before proceeding
+    if (!isStoreOnline) {
+      toast.error('Sorry, the store is currently closed for online orders. Please try again later.');
+      return;
+    }
+    
     if (!validateCustomerInfo()) {
       return;
     }
@@ -236,6 +244,12 @@ const CheckoutPage: React.FC = () => {
   // Updated function name and implementation for Square Web Payments SDK
   const handleSquareCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check store status before proceeding
+    if (!isStoreOnline) {
+      toast.error('Sorry, the store is currently closed for online orders. Please try again later.');
+      return;
+    }
     
     if (!validateCustomerInfo()) {
       return;

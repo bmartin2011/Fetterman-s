@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, FileText, Image, AlertCircle } from 'lucide-react';
+import { Download, Image, AlertCircle } from 'lucide-react';
 
 const WaiverFormPage: React.FC = () => {
   const handleDownload = (fileName: string, fileType: 'pdf' | 'image') => {

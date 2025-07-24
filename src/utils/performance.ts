@@ -29,20 +29,20 @@ export const trackWebVitals = () => {
     // Track Core Web Vitals with enhanced analytics
     import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
       const handleMetric = (metric: any) => {
-        const webVital: WebVitalMetric = {
-          name: metric.name,
-          value: metric.value,
-          rating: getRating(metric.name as keyof typeof webVitalsThresholds, metric.value),
-          timestamp: Date.now()
-        };
-
         if (process.env.NODE_ENV === 'development') {
           // Web vital tracked
         }
 
         // Send to analytics in production
         if (process.env.NODE_ENV === 'production') {
+          const webVital: WebVitalMetric = {
+            name: metric.name,
+            value: metric.value,
+            rating: getRating(metric.name as keyof typeof webVitalsThresholds, metric.value),
+            timestamp: Date.now()
+          };
           // Example: analytics.track('web_vital', webVital);
+          console.log('Web Vital:', webVital);
         }
       };
 
@@ -143,15 +143,15 @@ export const trackBundleSize = () => {
   if (typeof window !== 'undefined') {
     // Track initial bundle load time
     window.addEventListener('load', () => {
-      const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-      
       if (process.env.NODE_ENV === 'development') {
           // Bundle load time tracked
         }
       
       // In production, send to analytics
       if (process.env.NODE_ENV === 'production') {
+        const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
         // Example: analytics.track('bundle_load_time', { duration: loadTime });
+        console.log('Bundle load time:', loadTime);
       }
     });
   }
@@ -171,22 +171,22 @@ export const trackUserInteraction = (action: string, element?: string) => {
 
 // Error tracking
 export const trackError = (error: Error, context?: any) => {
-  const errorInfo = {
-    message: error.message,
-    stack: error.stack,
-    timestamp: Date.now(),
-    url: window.location.href,
-    userAgent: navigator.userAgent,
-    context
-  };
-  
   if (process.env.NODE_ENV === 'development') {
     // Error tracked
   }
   
   // In production, send to error tracking service
   if (process.env.NODE_ENV === 'production') {
+    const errorInfo = {
+      message: error.message,
+      stack: error.stack,
+      timestamp: Date.now(),
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+      context
+    };
     // Example: Sentry.captureException(error, { extra: errorInfo });
+    console.error('Error tracked:', errorInfo);
   }
 };
 
