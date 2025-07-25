@@ -4,7 +4,7 @@ import { useCart } from '../contexts/CartContext';
 import { squareService } from '../services/squareService';
 import GooglePayButton from '@google-pay/button-react';
 import DiscountCode from '../components/checkout/DiscountCode';
-import DateTimePicker from '../components/common/DateTimePicker';
+import DateTimePickerNew from '../components/common/DateTimePickerNew';
 import { Validator } from '../utils/validation';
 import { trackError } from '../utils/performance';
 import { useStoreStatus } from '../contexts/StoreStatusContext';
@@ -463,7 +463,7 @@ const CheckoutPage: React.FC = () => {
               
               {/* Date Time Picker */}
               <div className="mb-4">
-                <DateTimePicker
+                <DateTimePickerNew
                   selectedDate={selectedPickupDate || undefined}
                   selectedTime={selectedPickupTime || undefined}
                   onDateTimeSelect={setPickupDateTime}

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { squareService } from '../services/squareService';
 import LocationSelector from '../components/common/LocationSelector';
-import DateTimePicker from '../components/common/DateTimePicker';
+import DateTimePickerNew from '../components/common/DateTimePickerNew';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, ArrowLeft, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useStoreStatus } from '../contexts/StoreStatusContext';
@@ -295,7 +295,7 @@ const CartPage: React.FC = () => {
               {/* Pickup Date & Time */}
               {selectedLocation && (
                 <div className="mb-6 pb-6 border-b border-gray-200">
-                  <DateTimePicker
+                  <DateTimePickerNew
                     selectedDate={selectedPickupDate || undefined}
                     selectedTime={selectedPickupTime || undefined}
                     onDateTimeSelect={setPickupDateTime}

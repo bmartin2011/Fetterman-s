@@ -26,7 +26,7 @@ setInterval(() => {
     }
   }
   
-  if (cleaned > 0) {
+  if (cleaned > 0 && process.env.NODE_ENV === 'development') {
     console.log(`Cleaned ${cleaned} expired cache entries`);
   }
 }, 10 * 60 * 1000);
@@ -106,7 +106,9 @@ async function makeSquareRequest(endpoint, options = {}) {
   // Check cache first
   const cached = apiCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < ttl) {
-    console.log(`Cache hit for ${endpoint}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Cache hit for ${endpoint}`);
+    }
     return cached.data;
   }
 
@@ -136,7 +138,9 @@ async function makeSquareRequest(endpoint, options = {}) {
     timestamp: Date.now()
   });
 
-  console.log(`Cache miss for ${endpoint} - cached for ${ttl}ms`);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Cache miss for ${endpoint} - cached for ${ttl}ms`);
+  }
   return data;
 }
 
@@ -271,7 +275,9 @@ app.post('/api/square/products', async (req, res) => {
       // Removed: enabled_location_ids - no longer filtering by location at API level
     };
     
-    console.log('Fetching products with request body:', JSON.stringify(requestBody, null, 2));
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Fetching products with request body:', JSON.stringify(requestBody, null, 2));
+    }
     
     // Fetch both products and categories to check visibility
     const [productsData, categoriesData] = await Promise.all([
@@ -297,7 +303,9 @@ app.post('/api/square/products', async (req, res) => {
           const categoryData = category.category_data;
           if (categoryData.online_visibility === false) {
             hiddenCategoryIds.add(category.id);
-            console.log(`Hidden category found: ${categoryData.name} (${category.id})`);
+            if (process.env.NODE_ENV === 'development') {
+          console.log(`Hidden category found: ${categoryData.name} (${category.id})`);
+        }
           }
         }
       });
@@ -316,13 +324,17 @@ app.post('/api/square/products', async (req, res) => {
         
         // Skip archived items as additional safety check
         if (itemData.is_archived === true) {
-          console.log(`Filtering out archived item: ${itemData.name}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Filtering out archived item: ${itemData.name}`);
+          }
           return false;
         }
         
         // Filter out items with visibility set to 'PRIVATE'
         if (itemData.visibility === 'PRIVATE') {
-          console.log(`Filtering out private item: ${itemData.name}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Filtering out private item: ${itemData.name}`);
+          }
           return false;
         }
         
@@ -331,14 +343,18 @@ app.post('/api/square/products', async (req, res) => {
           const itemCategoryIds = itemData.categories.map(cat => cat.id || cat);
           const belongsToHiddenCategory = itemCategoryIds.some(catId => hiddenCategoryIds.has(catId));
           if (belongsToHiddenCategory) {
+            if (process.env.NODE_ENV === 'development') {
             console.log(`Filtering out item in hidden category: ${itemData.name}`);
+          }
             return false;
           }
         }
         
         // Also check legacy category_id field
         if (itemData.category_id && hiddenCategoryIds.has(itemData.category_id)) {
-          console.log(`Filtering out item in hidden category (legacy): ${itemData.name}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Filtering out item in hidden category (legacy): ${itemData.name}`);
+          }
           return false;
         }
         
@@ -346,8 +362,10 @@ app.post('/api/square/products', async (req, res) => {
       });
       
       const filteredCount = productsData.objects.length;
-      console.log(`Products fetched: ${originalCount}, after visibility filtering: ${filteredCount}`);
-      console.log('All products fetched - location filtering will be handled client-side');
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Products fetched: ${originalCount}, after visibility filtering: ${filteredCount}`);
+        console.log('All products fetched - location filtering will be handled client-side');
+      }
     }
     
     res.json(productsData);
@@ -379,7 +397,9 @@ app.post('/api/square/categories', async (req, res) => {
     // Filter out categories with online_visibility set to false
     if (data.objects) {
       const originalCount = data.objects.length;
-      console.log(`\n📂 Processing ${originalCount} categories for visibility filtering...`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`\n📂 Processing ${originalCount} categories for visibility filtering...`);
+      }
       
       data.objects = data.objects.filter(category => {
         if (category.type !== 'CATEGORY' || !category.category_data) {
@@ -387,21 +407,29 @@ app.post('/api/square/categories', async (req, res) => {
         }
         
         const categoryData = category.category_data;
-        console.log(`🔍 Checking category: ${categoryData.name} - online_visibility: ${categoryData.online_visibility}`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔍 Checking category: ${categoryData.name} - online_visibility: ${categoryData.online_visibility}`);
+        }
         
         // Filter out categories that are explicitly hidden online
         // online_visibility: false means hidden, true or undefined means visible
         if (categoryData.online_visibility === false) {
-          console.log(`❌ Filtering out hidden category: ${categoryData.name}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`❌ Filtering out hidden category: ${categoryData.name}`);
+          }
           return false;
         }
         
-        console.log(`✅ Keeping visible category: ${categoryData.name}`);
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`✅ Keeping visible category: ${categoryData.name}`);
+          }
         return true;
       });
       
       const filteredCount = data.objects.length;
-      console.log(`\n📊 Categories summary: ${originalCount} fetched → ${filteredCount} after visibility filtering\n`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`\n📊 Categories summary: ${originalCount} fetched → ${filteredCount} after visibility filtering\n`);
+      }
     }
     
     res.json(data);
@@ -664,7 +692,16 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
             recipient: {
               display_name: customer?.name || 'Customer'
             },
-            pickup_at: `${pickupDate}T${pickupTime}:00-06:00`, // Central Time Zone (CST/CDT) - RFC 3339 format for Square
+            pickup_at: (() => {
+              // Dynamic timezone detection for Central Time (CST/CDT)
+              const now = new Date();
+              const january = new Date(now.getFullYear(), 0, 1);
+              const july = new Date(now.getFullYear(), 6, 1);
+              const stdTimezoneOffset = Math.max(january.getTimezoneOffset(), july.getTimezoneOffset());
+              const isDST = now.getTimezoneOffset() < stdTimezoneOffset;
+              const timezoneOffset = isDST ? '-05:00' : '-06:00'; // CDT vs CST
+              return `${pickupDate}T${pickupTime}:00${timezoneOffset}`;
+            })(),
             note: 'Order placed via online checkout'
           }
         }]
@@ -679,14 +716,18 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
       }
     };
     
-    console.log('Creating checkout with data:', JSON.stringify(checkoutData, null, 2));
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Creating checkout with data:', JSON.stringify(checkoutData, null, 2));
+    }
     
     const data = await makeSquareRequest('/online-checkout/payment-links', {
       method: 'POST',
       body: JSON.stringify(checkoutData)
     });
     
-    console.log('Checkout response:', JSON.stringify(data, null, 2));
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Checkout response:', JSON.stringify(data, null, 2));
+    }
     
     // Return the checkout URL
     res.json({
@@ -727,9 +768,11 @@ app.use((error, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`\n🚀 Square proxy server running on port ${PORT}`);
+  console.log(`🚀 Square proxy server running on port ${PORT}`);
+if (process.env.NODE_ENV === 'development') {
   console.log(`📍 Environment: ${NODE_ENV}`);
   console.log(`🔗 Square Environment: ${SQUARE_ENVIRONMENT}`);
   console.log(`⏰ Server started at: ${new Date().toISOString()}`);
-  console.log(`\n✅ Server ready to accept requests\n`);
+  console.log(`✅ Server ready to accept requests`);
+}
 });

@@ -1,6 +1,6 @@
 // Service Worker for caching strategies and offline support
 
-const CACHE_VERSION = '1753396319'; // Increment this version number to force cache refresh
+const CACHE_VERSION = '1753478084'; // Increment this version number to force cache refresh
 const CACHE_NAME = `fettermans-v${CACHE_VERSION}`;
 const STATIC_CACHE = `static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `dynamic-v${CACHE_VERSION}`;

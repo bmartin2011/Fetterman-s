@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Search, MapPin, ChevronDown, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, MapPin, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import SimpleProductItem from '../components/products/SimpleProductItem';
 import LocationSelector from '../components/common/LocationSelector';
 import ProductDetailModal from '../components/products/ProductDetailModal';
 import ScrollToTop from '../components/common/ScrollToTop';
 import SkeletonLoader from '../components/SkeletonLoader';
-import ImageDebugger from '../components/debug/ImageDebugger';
+
 import { Product, Category } from '../types';
 import { useCart } from '../contexts/CartContext';
 import toast from 'react-hot-toast';
@@ -30,7 +30,7 @@ const ProductsPage: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
   const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
+  // const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -99,7 +99,7 @@ const ProductsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [dataCache]);
+  }, [dataCache, CACHE_DURATION]);
 
   useEffect(() => {
     // Check for clearCache URL parameter
@@ -299,7 +299,7 @@ const ProductsPage: React.FC = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [productsByCategory]);
+  }, [productsByCategory, selectedLocation]);
 
   // Initialize and update arrow visibility
   useEffect(() => {
@@ -640,12 +640,7 @@ const ProductsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Image Debugger - Development Only */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mb-8">
-            <ImageDebugger products={filteredProducts} />
-          </div>
-        )}
+
 
         {/* Category Sections - With subcategory organization */}
         {Object.entries(productsByCategory).map(([categoryId, { category, products }]) => {
