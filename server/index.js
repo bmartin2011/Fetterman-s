@@ -693,12 +693,16 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
               display_name: customer?.name || 'Customer'
             },
             pickup_at: (() => {
-              // Dynamic timezone detection for Central Time (CST/CDT)
+              // Fixed Central Time for Missouri store
               const now = new Date();
               const january = new Date(now.getFullYear(), 0, 1);
               const july = new Date(now.getFullYear(), 6, 1);
-              const stdTimezoneOffset = Math.max(january.getTimezoneOffset(), july.getTimezoneOffset());
-              const isDST = now.getTimezoneOffset() < stdTimezoneOffset;
+              
+              // Determine if Central Time is in DST using America/Chicago timezone
+              const centralJan = new Date(january.toLocaleString("en-US", {timeZone: "America/Chicago"}));
+              const centralJuly = new Date(july.toLocaleString("en-US", {timeZone: "America/Chicago"}));
+              const isDST = centralJuly.getTimezoneOffset() < centralJan.getTimezoneOffset();
+              
               const timezoneOffset = isDST ? '-05:00' : '-06:00'; // CDT vs CST
               return `${pickupDate}T${pickupTime}:00${timezoneOffset}`;
             })(),
