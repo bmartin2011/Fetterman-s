@@ -53,12 +53,12 @@ export const StoreStatusProvider: React.FC<StoreStatusProviderProps> = ({ childr
         }
       } else {
         // If status check fails, assume store is online to avoid blocking browsing
-        console.warn('Store status check failed with status:', response.status);
+        // Store status check failed - handled silently in production
         setIsStoreOnline(true);
       }
     } catch (error) {
       // Network error - assume store is online to keep website functional
-      console.warn('Store status check failed:', error);
+      // Store status check failed - handled silently in production
       setIsStoreOnline(true);
     } finally {
       setIsCheckingStatus(false);

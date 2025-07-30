@@ -245,9 +245,16 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       return;
     }
 
-    setItems(items.map(item => 
-      item.id === itemId ? { ...item, quantity } : item
-    ));
+    setItems(items.map(item => {
+      if (item.id === itemId) {
+        // Calculate the per-item price from the current totalPrice
+        const perItemPrice = item.totalPrice / item.quantity;
+        // Recalculate totalPrice for the new quantity
+        const newTotalPrice = perItemPrice * quantity;
+        return { ...item, quantity, totalPrice: newTotalPrice };
+      }
+      return item;
+    }));
   }, [items, removeFromCart]);
 
   const updateCustomizations = useCallback((itemId: string, customizations: {

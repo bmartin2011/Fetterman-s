@@ -19,7 +19,7 @@ const BreakfastMenuPage: React.FC = () => {
           setStoreHours(locations[0].hours);
         }
       } catch (error) {
-        console.error('Error fetching store hours:', error);
+        // Error fetching store hours - handled silently in production
       } finally {
         setIsLoadingHours(false);
       }

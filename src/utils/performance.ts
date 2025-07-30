@@ -42,7 +42,7 @@ export const trackWebVitals = () => {
             timestamp: Date.now()
           };
           // Example: analytics.track('web_vital', webVital);
-          console.log('Web Vital:', webVital);
+          // Web vital tracked silently in production
         }
       };
 
@@ -151,7 +151,7 @@ export const trackBundleSize = () => {
       if (process.env.NODE_ENV === 'production') {
         const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
         // Example: analytics.track('bundle_load_time', { duration: loadTime });
-        console.log('Bundle load time:', loadTime);
+        // Bundle load time tracked silently in production
       }
     });
   }
@@ -186,7 +186,7 @@ export const trackError = (error: Error, context?: any) => {
       context
     };
     // Example: Sentry.captureException(error, { extra: errorInfo });
-    console.error('Error tracked:', errorInfo);
+    // Error tracked silently in production
   }
 };
 

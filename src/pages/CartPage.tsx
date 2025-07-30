@@ -244,11 +244,11 @@ const CartPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Item Total */}
+                {/* Per Item Price */}
                 <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Item Total:</span>
+                  <span className="text-sm text-gray-600">Per Item:</span>
                   <span className="text-lg font-bold text-gray-900">
-                    ${item.totalPrice.toFixed(2)}
+                    ${(item.totalPrice / item.quantity).toFixed(2)}
                   </span>
                 </div>
               </div>
