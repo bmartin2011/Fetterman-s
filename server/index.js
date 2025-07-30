@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const helmet = require('helmet');
 const { body, validationResult } = require('express-validator');
 const { createRateLimiter, helmetConfig, getCorsConfig, sanitizeInput } = require('./config/security');
-require('dotenv').config();
+require('dotenv').config({ path: './server/.env' });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -608,9 +608,9 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
     
     // Build line items for the order
     const lineItems = items.map(item => {
-      // Handle CartItem structure: item has product object and totalPrice
+      // Handle CartItem structure: item has product object and base price
       const itemName = item.product?.name || item.name || 'Item';
-      const itemPrice = item.totalPrice || item.product?.price || item.price || 0;
+      const itemPrice = item.product?.price || item.price || 0;
       
       const lineItem = {
         name: itemName,
