@@ -610,6 +610,7 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
     const lineItems = items.map(item => {
       // Handle CartItem structure: item has product object and base price
       const itemName = item.product?.name || item.name || 'Item';
+      // Use base price per item, not total price (which already includes quantity)
       const itemPrice = item.product?.price || item.price || 0;
       
       const lineItem = {
