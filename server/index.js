@@ -1,13 +1,23 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const { Client, Environment } = require('square/legacy');
 const helmet = require('helmet');
+require('dotenv').config();
 const { body, validationResult } = require('express-validator');
 const { createRateLimiter, helmetConfig, getCorsConfig, sanitizeInput } = require('./config/security');
-require('dotenv').config({ path: './server/.env' });
+require('dotenv').config({ path: './.env' });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Initialize Square client
+const squareClient = new Client({
+  bearerAuthCredentials: {
+    accessToken: process.env.REACT_APP_SQUARE_ACCESS_TOKEN
+  },
+  environment: process.env.REACT_APP_SQUARE_ENVIRONMENT === 'sandbox' ? Environment.Sandbox : Environment.Production
+});
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Trust proxy for Railway deployment
@@ -26,9 +36,7 @@ setInterval(() => {
     }
   }
   
-  if (cleaned > 0 && process.env.NODE_ENV === 'development') {
-    console.log(`Cleaned ${cleaned} expired cache entries`);
-  }
+
 }, 10 * 60 * 1000);
 
 // Security middleware
@@ -39,6 +47,12 @@ app.use('/api/', createRateLimiter());
 
 // CORS configuration
 app.use(cors(getCorsConfig()));
+
+// Request logging middleware for debugging
+app.use((req, res, next) => {
+  // Request logging removed for production
+  next();
+});
 
 // Input sanitization
 app.use(sanitizeInput);
@@ -51,14 +65,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use((req, res, next) => {
   if (process.env.NODE_ENV !== 'production') {
     const timestamp = new Date().toISOString();
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[${timestamp}] ${req.method} ${req.url}`);
-      console.log('Headers:', req.headers);
-      
-      if (req.body && Object.keys(req.body).length > 0) {
-        console.log('Request body:', JSON.stringify(req.body, null, 2));
-      }
-    }
+
   }
   
   next();
@@ -106,9 +113,7 @@ async function makeSquareRequest(endpoint, options = {}) {
   // Check cache first
   const cached = apiCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < ttl) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Cache hit for ${endpoint}`);
-    }
+
     return cached.data;
   }
 
@@ -138,9 +143,7 @@ async function makeSquareRequest(endpoint, options = {}) {
     timestamp: Date.now()
   });
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Cache miss for ${endpoint} - cached for ${ttl}ms`);
-  }
+
   return data;
 }
 
@@ -276,7 +279,7 @@ app.post('/api/square/products', async (req, res) => {
     };
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('Fetching products with request body:', JSON.stringify(requestBody, null, 2));
+    
     }
     
     // Fetch both products and categories to check visibility
@@ -304,7 +307,7 @@ app.post('/api/square/products', async (req, res) => {
           if (categoryData.online_visibility === false) {
             hiddenCategoryIds.add(category.id);
             if (process.env.NODE_ENV === 'development') {
-          console.log(`Hidden category found: ${categoryData.name} (${category.id})`);
+  
         }
           }
         }
@@ -325,7 +328,7 @@ app.post('/api/square/products', async (req, res) => {
         // Skip archived items as additional safety check
         if (itemData.is_archived === true) {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`Filtering out archived item: ${itemData.name}`);
+    
           }
           return false;
         }
@@ -333,7 +336,7 @@ app.post('/api/square/products', async (req, res) => {
         // Filter out items with visibility set to 'PRIVATE'
         if (itemData.visibility === 'PRIVATE') {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`Filtering out private item: ${itemData.name}`);
+    
           }
           return false;
         }
@@ -344,7 +347,7 @@ app.post('/api/square/products', async (req, res) => {
           const belongsToHiddenCategory = itemCategoryIds.some(catId => hiddenCategoryIds.has(catId));
           if (belongsToHiddenCategory) {
             if (process.env.NODE_ENV === 'development') {
-            console.log(`Filtering out item in hidden category: ${itemData.name}`);
+    
           }
             return false;
           }
@@ -353,7 +356,7 @@ app.post('/api/square/products', async (req, res) => {
         // Also check legacy category_id field
         if (itemData.category_id && hiddenCategoryIds.has(itemData.category_id)) {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`Filtering out item in hidden category (legacy): ${itemData.name}`);
+    
           }
           return false;
         }
@@ -362,10 +365,7 @@ app.post('/api/square/products', async (req, res) => {
       });
       
       const filteredCount = productsData.objects.length;
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Products fetched: ${originalCount}, after visibility filtering: ${filteredCount}`);
-        console.log('All products fetched - location filtering will be handled client-side');
-      }
+      
     }
     
     res.json(productsData);
@@ -376,29 +376,142 @@ app.post('/api/square/products', async (req, res) => {
   }
 });
 
-// Get Square categories
-app.post('/api/square/categories', async (req, res) => {
+// Get Square categories using Square SDK
+app.get('/api/square/categories', async (req, res) => {
   try {
-    // Use catalog/search endpoint for categories - fetch ALL categories to see hierarchy
-    // Removed category_type filter to see all category types including parent/child relationships
-    // Filter out deleted categories (archived filtering handled by include_deleted_objects)
-    // Include related objects for complete category data
-    const requestBody = {
-      object_types: ['CATEGORY'],
-      include_deleted_objects: false,
-      include_related_objects: true
+    const catalogApi = squareClient.catalogApi;
+    
+    // Fetch categories
+    const categoriesResponse = await catalogApi.listCatalog(
+      undefined, // cursor
+      'CATEGORY' // types
+    );
+    
+    if (categoriesResponse.result.errors) {
+      return res.status(400).json({ 
+        error: 'Failed to fetch categories from Square API',
+        details: categoriesResponse.result.errors 
+      });
+    }
+    
+    const allCategories = categoriesResponse.result.objects || [];
+    
+    // Show all categories - no filtering by onlineVisibility
+    const categories = allCategories.filter(category => {
+      if (category.type !== 'CATEGORY' || !category.categoryData) {
+        return true; // Keep non-category objects
+      }
+      
+      return true; // Show all categories regardless of onlineVisibility
+    });
+    
+    // Log hidden categories for reference
+    const hiddenCategories = allCategories.filter(category => {
+      if (category.type !== 'CATEGORY' || !category.categoryData) {
+        return false;
+      }
+      return category.categoryData.onlineVisibility === false;
+    });
+    
+
+    
+    // Fetch all availability periods
+    const availabilityPeriodsResponse = await catalogApi.listCatalog(
+      undefined, // cursor
+      'AVAILABILITY_PERIOD' // types
+    );
+    
+    const availabilityPeriods = availabilityPeriodsResponse.result.objects || [];
+    
+
+    
+    // Create a map of availability periods for easy lookup
+    const availabilityPeriodsMap = {};
+    availabilityPeriods.forEach(period => {
+      if (period.availabilityPeriodData) {
+
+        availabilityPeriodsMap[period.id] = {
+          id: period.id,
+          startTime: period.availabilityPeriodData.startLocalTime,
+          endTime: period.availabilityPeriodData.endLocalTime,
+          dayOfWeek: period.availabilityPeriodData.dayOfWeek
+        };
+      }
+     });
+    
+    // Enhance categories with availability period details
+    const enhancedCategories = categories.map(category => {
+      const enhanced = { ...category };
+      
+      // Check if category has availability period IDs (try multiple possible property names)
+      const categoryData = category.categoryData;
+      if (categoryData) {
+        const availabilityPeriodIds = categoryData.availabilityPeriodIds || 
+                                    categoryData.availability_period_ids || 
+                                    categoryData.availabilityPeriods || 
+                                    [];
+        
+        if (availabilityPeriodIds && availabilityPeriodIds.length > 0) {
+          enhanced.availabilityPeriods = availabilityPeriodIds
+            .map(id => availabilityPeriodsMap[id])
+            .filter(period => period); // Remove undefined periods
+        }
+      }
+      
+      return enhanced;
+    });
+    
+    // Convert BigInt values to strings for JSON serialization
+    const convertBigIntToString = (obj) => {
+      if (obj === null || obj === undefined) return obj;
+      if (typeof obj === 'bigint') return obj.toString();
+      if (typeof obj !== 'object') return obj;
+      if (Array.isArray(obj)) {
+        return obj.map(item => convertBigIntToString(item));
+      }
+      
+      const result = {};
+      for (const [key, value] of Object.entries(obj)) {
+        result[key] = convertBigIntToString(value);
+      }
+      return result;
     };
     
-    const data = await makeSquareRequest('/catalog/search', {
-      method: 'POST',
-      body: JSON.stringify(requestBody)
+    const serializedCategories = convertBigIntToString(enhancedCategories);
+    const serializedAvailabilityPeriods = convertBigIntToString(Object.values(availabilityPeriodsMap));
+    
+
+    
+    res.json({
+      objects: serializedCategories,
+      availabilityPeriods: serializedAvailabilityPeriods
     });
+    
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Internal server error while fetching categories',
+      details: error.message 
+    });
+  }
+});
+
+// Keep the original POST endpoint for backward compatibility
+app.post('/api/square/categories', async (req, res) => {
+  try {
+    // Use catalog/list endpoint for categories as per Square workflow
+    // This endpoint properly returns availability_period_ids
+    const data = await makeSquareRequest('/catalog/list?types=CATEGORY', {
+      method: 'GET'
+    });
+    
+    // Collect all availability period IDs from categories
+    const availabilityPeriodIds = new Set();
     
     // Filter out categories with online_visibility set to false
     if (data.objects) {
       const originalCount = data.objects.length;
       if (process.env.NODE_ENV === 'development') {
-        console.log(`\n📂 Processing ${originalCount} categories for visibility filtering...`);
+      
       }
       
       data.objects = data.objects.filter(category => {
@@ -407,32 +520,63 @@ app.post('/api/square/categories', async (req, res) => {
         }
         
         const categoryData = category.category_data;
+        
+        // Collect availability period IDs
+        if (categoryData.availability_period_ids && Array.isArray(categoryData.availability_period_ids)) {
+          categoryData.availability_period_ids.forEach(id => availabilityPeriodIds.add(id));
+        }
+        
         if (process.env.NODE_ENV === 'development') {
-          console.log(`🔍 Checking category: ${categoryData.name} - online_visibility: ${categoryData.online_visibility}`);
+    
         }
         
         // Filter out categories that are explicitly hidden online
         // online_visibility: false means hidden, true or undefined means visible
         if (categoryData.online_visibility === false) {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`❌ Filtering out hidden category: ${categoryData.name}`);
+    
           }
           return false;
         }
         
         if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ Keeping visible category: ${categoryData.name}`);
+    
           }
         return true;
       });
       
       const filteredCount = data.objects.length;
       if (process.env.NODE_ENV === 'development') {
-        console.log(`\n📊 Categories summary: ${originalCount} fetched → ${filteredCount} after visibility filtering\n`);
+      
       }
     }
     
-    res.json(data);
+    // Fetch availability periods if any were found
+    const availabilityPeriods = {};
+    if (availabilityPeriodIds.size > 0) {
+      try {
+        for (const periodId of availabilityPeriodIds) {
+          const periodData = await makeSquareRequest(`/catalog/object/${periodId}`, {
+            method: 'GET'
+          });
+          
+          if (periodData.object && periodData.object.type === 'AVAILABILITY_PERIOD') {
+            availabilityPeriods[periodId] = periodData.object;
+          }
+        }
+      } catch (periodError) {
+        console.error('Error fetching availability periods:', periodError);
+        // Continue without availability periods if there's an error
+      }
+    }
+    
+    // Add availability periods to the response
+    const response = {
+      ...data,
+      availability_periods: availabilityPeriods
+    };
+    
+    res.json(response);
   } catch (error) {
     console.error('Error fetching categories:', error);
     console.error('Full error details:', error);
@@ -606,50 +750,74 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
     // Generate unique idempotency key
     const idempotencyKey = `checkout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
+    // Validate required fields
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'Items are required for checkout' });
+    }
+
     // Build line items for the order
-    const lineItems = items.map(item => {
-      // Handle CartItem structure: item has product object and base price
-      const itemName = item.product?.name || item.name || 'Item';
-      // Use base price per item, not total price (which already includes quantity)
-      const itemPrice = item.product?.price || item.price || 0;
+    const lineItems = items.map((item, index) => {
+      // Handle CartItem structure: item has product object and total price
+      const itemName = item.product?.name || item.name || `Item ${index + 1}`;
+      const basePrice = item.product?.price || 0;
+      const quantity = item.quantity || 1;
+      
+      // Calculate modifiers/add-ons separately
+      const modifiers = [];
+      let addOnTotal = 0;
+      
+      if (item.selectedVariants && item.product?.variants) {
+        Object.entries(item.selectedVariants).forEach(([variantId, selectedValue]) => {
+          const variant = item.product.variants?.find(v => v.id === variantId);
+          if (variant) {
+            if (Array.isArray(selectedValue)) {
+              selectedValue.forEach(value => {
+                const option = variant.options.find(opt => opt.name === value);
+                if (option && option.price !== undefined && option.price > 0) {
+                  addOnTotal += option.price;
+                  modifiers.push({
+                    name: `${variant.name}: ${option.name}`,
+                    base_price_money: {
+                      amount: Math.round(option.price * 100),
+                      currency: 'USD'
+                    }
+                  });
+                }
+              });
+            } else {
+              const option = variant.options.find(opt => opt.name === selectedValue);
+              if (option && option.price !== undefined && option.price > 0) {
+                addOnTotal += option.price;
+                modifiers.push({
+                  name: `${variant.name}: ${option.name}`,
+                  base_price_money: {
+                    amount: Math.round(option.price * 100),
+                    currency: 'USD'
+                  }
+                });
+              }
+            }
+          }
+        });
+      }
+      
+      // Validate item data
+      if (basePrice <= 0) {
+        throw new Error(`Invalid base price for item: ${itemName}`);
+      }
       
       const lineItem = {
         name: itemName,
-        quantity: item.quantity.toString(),
+        quantity: quantity.toString(),
         base_price_money: {
-          amount: Math.round(itemPrice * 100), // Convert to cents
+          amount: Math.round(basePrice * 100), // Base price only
           currency: 'USD'
         }
       };
       
-      // Add variations/modifiers if present
-      if (item.selectedVariants && Object.keys(item.selectedVariants).length > 0) {
-        const modifiers = [];
-        Object.entries(item.selectedVariants).forEach(([variantId, selection]) => {
-          if (Array.isArray(selection)) {
-            selection.forEach(option => {
-              modifiers.push({
-                name: option,
-                base_price_money: {
-                  amount: 0, // Modifier pricing can be added here if needed
-                  currency: 'USD'
-                }
-              });
-            });
-          } else if (selection) {
-            modifiers.push({
-              name: selection,
-              base_price_money: {
-                amount: 0, // Modifier pricing can be added here if needed
-                currency: 'USD'
-              }
-            });
-          }
-        });
-        
-        if (modifiers.length > 0) {
-          lineItem.modifiers = modifiers;
-        }
+      // Add modifiers if any
+      if (modifiers.length > 0) {
+        lineItem.modifiers = modifiers;
       }
       
       // Add special instructions as note
@@ -657,8 +825,38 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
         lineItem.note = item.specialInstructions;
       }
       
+      // Add variation details for non-pricing options
+      if (item.selectedVariants && item.product?.variants) {
+        const nonPricingVariations = [];
+        Object.entries(item.selectedVariants).forEach(([variantId, selectedValue]) => {
+          const variant = item.product.variants?.find(v => v.id === variantId);
+          if (variant) {
+            if (Array.isArray(selectedValue)) {
+              selectedValue.forEach(value => {
+                const option = variant.options.find(opt => opt.name === value);
+                if (option && (option.price === undefined || option.price === 0)) {
+                  nonPricingVariations.push(`${variant.name}: ${option.name}`);
+                }
+              });
+            } else {
+              const option = variant.options.find(opt => opt.name === selectedValue);
+              if (option && (option.price === undefined || option.price === 0)) {
+                nonPricingVariations.push(`${variant.name}: ${option.name}`);
+              }
+            }
+          }
+        });
+        
+        if (nonPricingVariations.length > 0) {
+          const existingNote = lineItem.note || '';
+          lineItem.note = existingNote ? `${existingNote} | ${nonPricingVariations.join(', ')}` : nonPricingVariations.join(', ');
+        }
+      }
+      
       return lineItem;
     });
+
+    console.log('Creating checkout with line items:', JSON.stringify(lineItems, null, 2));
     
     // Add discounts to the order if present
     const orderDiscounts = [];
@@ -676,14 +874,31 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
       });
     }
     
+    // Ensure we have a valid location ID
+    let locationId = pickupLocation?.id;
+    if (!locationId) {
+      // Fetch the main location from Square API instead of using hardcoded value
+      try {
+        const locationsResponse = await makeSquareRequest('/locations');
+        if (locationsResponse.locations && locationsResponse.locations.length > 0) {
+          locationId = locationsResponse.locations[0].id;
+          // Using main location ID from Square API
+        } else {
+          throw new Error('No locations found in Square account');
+        }
+      } catch (locationError) {
+        console.error('Failed to fetch location from Square API:', locationError);
+        return res.status(400).json({ 
+          error: 'Unable to determine store location. Please select a pickup location.' 
+        });
+      }
+    }
+
     // Create checkout with order data directly (order-based checkout)
     const checkoutData = {
       idempotency_key: idempotencyKey,
       order: {
-        location_id: pickupLocation?.id || process.env.REACT_APP_SQUARE_LOCATION_ID,
-        pricing_options: {
-          auto_apply_taxes: true
-        },
+        location_id: locationId,
         line_items: lineItems,
         ...(orderDiscounts.length > 0 && { discounts: orderDiscounts }),
         fulfillments: [{
@@ -694,18 +909,41 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
               display_name: customer?.name || 'Customer'
             },
             pickup_at: (() => {
-              // Fixed Central Time for Missouri store
-              const now = new Date();
-              const january = new Date(now.getFullYear(), 0, 1);
-              const july = new Date(now.getFullYear(), 6, 1);
+              // Frontend sends date as YYYY-MM-DD and time as HH:MM
+              // We treat this as Central Time since that's where the store is located
               
-              // Determine if Central Time is in DST using America/Chicago timezone
-              const centralJan = new Date(january.toLocaleString("en-US", {timeZone: "America/Chicago"}));
-              const centralJuly = new Date(july.toLocaleString("en-US", {timeZone: "America/Chicago"}));
-              const isDST = centralJuly.getTimezoneOffset() < centralJan.getTimezoneOffset();
-              
-              const timezoneOffset = isDST ? '-05:00' : '-06:00'; // CDT vs CST
-              return `${pickupDate}T${pickupTime}:00${timezoneOffset}`;
+              try {
+                // Create a date object for the specific pickup date to determine timezone offset
+                // Use noon on the pickup date to avoid any edge cases with time
+                const testDate = new Date(`${pickupDate}T12:00:00`);
+                
+                // Use Intl.DateTimeFormat to get the timezone offset for Central Time on this specific date
+                const formatter = new Intl.DateTimeFormat('en', {
+                  timeZone: 'America/Chicago',
+                  timeZoneName: 'longOffset'
+                });
+                
+                const parts = formatter.formatToParts(testDate);
+                const timeZonePart = parts.find(part => part.type === 'timeZoneName');
+                let timezoneOffset = '-06:00'; // Default to CST
+                
+                if (timeZonePart && timeZonePart.value) {
+                  // Parse the offset (e.g., "GMT-6" or "GMT-5")
+                  const offsetMatch = timeZonePart.value.match(/GMT([+-]\d+)/);
+                  if (offsetMatch) {
+                    const offset = parseInt(offsetMatch[1]);
+                    timezoneOffset = offset === -5 ? '-05:00' : '-06:00';
+                  }
+                }
+                
+                // Pickup time calculated with timezone offset
+                return `${pickupDate}T${pickupTime}:00${timezoneOffset}`;
+                
+              } catch (error) {
+                console.error('Error determining timezone:', error);
+                // Fallback to CST
+                return `${pickupDate}T${pickupTime}:00-06:00`;
+              }
             })(),
             note: 'Order placed via online checkout'
           }
@@ -721,18 +959,14 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
       }
     };
     
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Creating checkout with data:', JSON.stringify(checkoutData, null, 2));
-    }
+
     
     const data = await makeSquareRequest('/online-checkout/payment-links', {
       method: 'POST',
       body: JSON.stringify(checkoutData)
     });
     
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Checkout response:', JSON.stringify(data, null, 2));
-    }
+
     
     // Return the checkout URL
     res.json({
@@ -773,11 +1007,6 @@ app.use((error, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Square proxy server running on port ${PORT}`);
-if (process.env.NODE_ENV === 'development') {
-  console.log(`📍 Environment: ${NODE_ENV}`);
-  console.log(`🔗 Square Environment: ${SQUARE_ENVIRONMENT}`);
-  console.log(`⏰ Server started at: ${new Date().toISOString()}`);
-  console.log(`✅ Server ready to accept requests`);
-}
+  console.log(`Server running on port ${PORT} in ${NODE_ENV} mode`);
+
 });

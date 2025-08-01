@@ -1,0 +1,2013 @@
+﻿{
+    "objects":  [
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "QYZ7ZRGY2WDEBFZT5E6WHF3S",
+                        "updatedAt":  "2024-08-19T14:00:29.168Z",
+                        "version":  "1724076029168",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Party Trays \u0026 Deli Platters",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2250700302057472"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "WPIJM36CCYQHONBBB5D5IZAD",
+                        "updatedAt":  "2024-10-24T00:25:59.738Z",
+                        "version":  "1729729559738",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Sandwiches",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2250494143627264"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  true
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "K5THXFDOISDRJO6UMA67LNQ2",
+                        "updatedAt":  "2025-06-29T13:31:23.741Z",
+                        "version":  "1751203883741",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Chips \u0026 Salty Snacks",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2250425424150528"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "ZABWSZHNUP2A3HEUGM2CMTWL",
+                        "updatedAt":  "2025-06-07T16:24:54.839Z",
+                        "version":  "1749313494839",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Bottled Drinks",
+                                             "imageIds":  [
+                                                              "XV3AWDHXEDIVZKBWP7NUW2TY"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2251250057871360"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "CC5V5TXWOU2WOJJVUVCHZNWS",
+                        "updatedAt":  "2024-11-07T19:16:58.635Z",
+                        "version":  "1731007018635",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "149dd73b-cd19-49fa-8abd-ae2d1b44a028",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Breakfast",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2251593655255040"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "BE74VV42XQ2EYJOCWKZUARNB",
+                        "updatedAt":  "2024-05-04T01:02:12.849Z",
+                        "version":  "1714784532849",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "28980777-00bc-4bd0-a1b8-989db4040b25",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Kombucha Retail",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2250769021534208"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "VWWPQOOPD76OCX42BFMBCAOZ",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "ae71f243-8b57-4fdb-847e-244722bfaddd",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Fountain Drinks",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2250631582580736"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "ED4VDP6KRJLH3RUMWQ367BJ4",
+                        "updatedAt":  "2024-10-10T15:07:02.775Z",
+                        "version":  "1728572822775",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "GGHYWJUTI75AIOF5RBIU5XPU",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Bread",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2251662374731776"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "SBFJ44YMP3TEVX4DUP4MAQXP",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "f28d4d89-ac7e-46f6-9816-19828d3334e3",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Side Salads",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2250562863104000"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "TUE2WRRGEBHF3C5X7S65FTK3",
+                        "updatedAt":  "2025-07-02T02:08:11.512Z",
+                        "version":  "1751422091512",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "5WPKZDK7JE5BHEJDLGRGRYLB",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Boar’s Head Meat \u0026 Cheese",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2251731094208512"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "VFEKWZAKRSOMRYLMXBTO4J5A",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "d766e865-e335-48c6-b49f-576e43d28794",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Ice Cream",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2250906460487680"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  true
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "YFDF5XJ4RGQ7DPC33X7BODED",
+                        "updatedAt":  "2025-07-03T22:52:22.412Z",
+                        "version":  "1751583142412",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "ZSHOV225LQKTGS2FI63A67MA",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Coffee",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2251524935778304"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "DAVDNJ2SH7MUBKIDDWFFSYDO",
+                        "updatedAt":  "2024-05-04T01:02:12.849Z",
+                        "version":  "1714784532849",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "4PP65TLKEPKLK3LIPC2DV7BB",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Kombucha On Tap",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2250837741010944"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "WZW4IVT2LCHSVE4XP3NXMGAC",
+                        "updatedAt":  "2024-05-04T01:02:12.849Z",
+                        "version":  "1714784532849",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "P6YH5NAWNBYOQCHLWRTJUR5W",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Cold Brew Coffee On Tap",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2251456216301568"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "ZFOD22MDEIUUUZRH6AWLGHDY",
+                        "updatedAt":  "2024-05-04T01:02:12.849Z",
+                        "version":  "1714784532849",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "87240ff1-65e3-45eb-83ec-1b8bec8d5370",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Grab \u0026 Go Sandwiches",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2251043899441152"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "CJVN7AI4IATPCRER7BCTR3CB",
+                        "updatedAt":  "2025-07-14T03:37:17.639Z",
+                        "version":  "1752464237639",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "1f1530a7-1368-4e98-9c19-60176927494a",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Grab \u0026 Go",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2251112618917888"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  true
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "WQGZBISRBRZK6X4IMIKJGYZH",
+                        "updatedAt":  "2025-06-29T18:53:46.043Z",
+                        "version":  "1751223226043",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Sweet Treats",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2250219265720320"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  true
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "WHRYZ2RRDW62Q57RX23N2UNP",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "167876ca-be97-484a-a5c1-ee68d5002271",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Soup",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2250013107290112"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "FI52YSA2TLK425RASZPNOFAD",
+                        "updatedAt":  "2024-05-04T01:02:12.849Z",
+                        "version":  "1714784532849",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "RIABZW5KHBLQARILT3IA7RJG",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Sack Lunches",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2249944387813376"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "HCQMHY3HC7NNABFJN5TMXX74",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "a5b324a5-ce56-45b1-a4d9-db029226e8d8",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Condiments, Sauces \u0026 Spices",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2249806948859904"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "U45IEWVLJVBAPVEI4CQ54IKT",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "e328b963-0d99-4d03-8ea4-6bade96b5c6a",
+                                                 "locationId":  "L19141K26MM02"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Donations",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2249738229383168"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  true
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "ACW4J6Y5LFRCRIXW7OOROEUS",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Philly Cheesesteaks",
+                                             "imageIds":  [
+                                                              "VXOMDI3CNLIQXEBGTQQNBBYL"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "WPIJM36CCYQHONBBB5D5IZAD",
+                                                                    "ordinal":  "-2251731094208512"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "onlineVisibility":  false,
+                                             "rootCategory":  "WPIJM36CCYQHONBBB5D5IZAD"
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "WE577R3TLFW5WUBQBGOAOYUX",
+                        "updatedAt":  "2024-07-16T16:40:33.999Z",
+                        "version":  "1721148033999",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Pizza Subs",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "WPIJM36CCYQHONBBB5D5IZAD",
+                                                                    "ordinal":  "-2251662374731776"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "onlineVisibility":  false,
+                                             "rootCategory":  "WPIJM36CCYQHONBBB5D5IZAD"
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "XPGCHH2SUBTTXGSHM3CFLLCH",
+                        "updatedAt":  "2024-07-16T16:43:27.953Z",
+                        "version":  "1721148207953",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Reubens \u0026 Hot Pastrami Sandwiches",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "WPIJM36CCYQHONBBB5D5IZAD",
+                                                                    "ordinal":  "-2251593655255040"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "onlineVisibility":  false,
+                                             "rootCategory":  "WPIJM36CCYQHONBBB5D5IZAD"
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "Q4DNV2V62IFLUJFFT2Y4J47G",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Hot Dog Eating Contest",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "-2249669509906432"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "onlineVisibility":  false
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "N4X3XJ6HSGAZ5J3JU6TTIL23",
+                        "updatedAt":  "2024-10-15T19:23:57.251Z",
+                        "version":  "1729020237251",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Party Trays \u0026 Deli Platters",
+                                             "imageIds":  [
+                                                              "47SQCDPIEYOPNNUKV6IWJPYU"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "1001945"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "Boar\u0027s Head Brand Party Trays \u0026 Deli Platters",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "TPP6JNLEKEO4HY2PGVBLLY3M",
+                        "updatedAt":  "2024-10-17T02:22:17.246Z",
+                        "version":  "1729131737246",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Condiments, Sauces \u0026 Spices",
+                                             "imageIds":  [
+                                                              "H4UQFTHDRZL7PSMS4WKTO4GQ"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "1100254"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "Boar\u0027s Head Condiments",
+                                                                 "permalink":  "boarsheadcondiments"
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "Q4ONR3T4SGU4U7BFIISWCYSL",
+                        "updatedAt":  "2024-10-16T12:48:54.548Z",
+                        "version":  "1729082934548",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Chips, Snacks \u0026 More!",
+                                             "imageIds":  [
+                                                              "RVF3IZ5KJVV3H7VEV43BQ2MV"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "438951"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "KFDAI4KZSOA5EYCESZIIBV3W",
+                        "updatedAt":  "2024-10-17T04:04:07.351Z",
+                        "version":  "1729137847351",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Meat \u0026 Cheese, Sliced to Order",
+                                             "imageIds":  [
+                                                              "TCIUQ6DXRW24ATAAXE3SVKOS"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "951371"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "Boar\u0027s Head Meat \u0026 Cheese Sliced to Order",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  "Boars_Head_Meat_Cheese_Sliced_To_Order"
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "K4VUZIQWHQJWV4L6A4GJOAFE",
+                        "updatedAt":  "2025-07-09T06:06:41.458Z",
+                        "version":  "1752041201458",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Signature Sandwiches",
+                                             "imageIds":  [
+                                                              "TYF5Y3UTRVHBGSHZWIROFBKK"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "101672"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "6GLDDC2YLFD2LWYJZIYJMEVU",
+                        "updatedAt":  "2025-07-22T18:52:29.892Z",
+                        "version":  "1753210349892",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Breakfast",
+                                             "imageIds":  [
+                                                              "5HSL3BPYIVMWM3EM4354FF2K"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "201855"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "availabilityPeriodIds":  [
+                                                                           "VUUMB43FDZM6AQB3JW4ISBBO",
+                                                                           "UKLHCHW4KOHC3KB35D5ABBWC",
+                                                                           "MOQWU4EXMTH5S33X5NIBUUXQ",
+                                                                           "LXVZOG7XGHB4QUA25YGGCDVZ",
+                                                                           "TF7XQVGXQ5IXMM22PK6QO2R6",
+                                                                           "I4SPX4EK6CN5D7C2VPXFOID2",
+                                                                           "IGP5NIKBK47QY4UISCPW3HEF"
+                                                                       ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  "Breakfast"
+                                                             }
+                                         },
+                        "availabilityPeriods":  [
+                                                    {
+                                                        "id":  "VUUMB43FDZM6AQB3JW4ISBBO",
+                                                        "dayOfWeek":  "MON"
+                                                    },
+                                                    {
+                                                        "id":  "UKLHCHW4KOHC3KB35D5ABBWC",
+                                                        "dayOfWeek":  "TUE"
+                                                    },
+                                                    {
+                                                        "id":  "MOQWU4EXMTH5S33X5NIBUUXQ",
+                                                        "dayOfWeek":  "WED"
+                                                    },
+                                                    {
+                                                        "id":  "LXVZOG7XGHB4QUA25YGGCDVZ",
+                                                        "dayOfWeek":  "THU"
+                                                    },
+                                                    {
+                                                        "id":  "TF7XQVGXQ5IXMM22PK6QO2R6",
+                                                        "dayOfWeek":  "FRI"
+                                                    },
+                                                    {
+                                                        "id":  "I4SPX4EK6CN5D7C2VPXFOID2",
+                                                        "dayOfWeek":  "SAT"
+                                                    },
+                                                    {
+                                                        "id":  "IGP5NIKBK47QY4UISCPW3HEF",
+                                                        "dayOfWeek":  "SUN"
+                                                    }
+                                                ]
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                        "updatedAt":  "2024-10-17T04:29:44.589Z",
+                        "version":  "1729139384589",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Beverages",
+                                             "imageIds":  [
+                                                              "XV3AWDHXEDIVZKBWP7NUW2TY"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "376034"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "WL4KHG2RKDNPOMZ7FA4GOEE7",
+                        "updatedAt":  "2025-06-30T15:09:47.203Z",
+                        "version":  "1751296187203",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Bread Loaves",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "1051099"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "BLCJ3OK366SFVBWIX3HYSKVO",
+                        "updatedAt":  "2024-10-17T02:48:44.195Z",
+                        "version":  "1729133324195",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Sweet Treats",
+                                             "imageIds":  [
+                                                              "V27BSAUHZVHQYQ6IBCAEQ5FH"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "900798"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "4L7PMKDPIFBSOZBSOHBESDHF",
+                        "updatedAt":  "2025-05-24T03:48:37.172Z",
+                        "version":  "1748058517172",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Soup",
+                                             "imageIds":  [
+                                                              "TP4BQXP3PE7M6NA6V6IRA2O3"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "350805"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "availabilityPeriodIds":  [
+                                                                           "UXEFCQGCOX5JSI45K25WEDVD",
+                                                                           "NDDGKUITEN3BRRETE7M3UYRG",
+                                                                           "WN3J6CNTSB6ECSEYRSTCEWWB",
+                                                                           "CT2HQKSIOSEPZUBC4NKGXNFR",
+                                                                           "B5DVFK4OHR3BFPFSIMVCNUYR",
+                                                                           "QBA7B6MXAB6ZKDQCYRP37HMN",
+                                                                           "FCDIMFZI3W2XJ4NICC4D3ABX"
+                                                                       ],
+                                             "onlineVisibility":  false,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "Soup",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  "Soup"
+                                                             }
+                                         },
+                        "availabilityPeriods":  [
+                                                    {
+                                                        "id":  "UXEFCQGCOX5JSI45K25WEDVD",
+                                                        "dayOfWeek":  "SAT"
+                                                    },
+                                                    {
+                                                        "id":  "NDDGKUITEN3BRRETE7M3UYRG",
+                                                        "dayOfWeek":  "MON"
+                                                    },
+                                                    {
+                                                        "id":  "WN3J6CNTSB6ECSEYRSTCEWWB",
+                                                        "dayOfWeek":  "TUE"
+                                                    },
+                                                    {
+                                                        "id":  "CT2HQKSIOSEPZUBC4NKGXNFR",
+                                                        "dayOfWeek":  "FRI"
+                                                    },
+                                                    {
+                                                        "id":  "B5DVFK4OHR3BFPFSIMVCNUYR",
+                                                        "dayOfWeek":  "WED"
+                                                    },
+                                                    {
+                                                        "id":  "QBA7B6MXAB6ZKDQCYRP37HMN",
+                                                        "dayOfWeek":  "THU"
+                                                    },
+                                                    {
+                                                        "id":  "FCDIMFZI3W2XJ4NICC4D3ABX",
+                                                        "dayOfWeek":  "SUN"
+                                                    }
+                                                ]
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "O6DLFQAAAO6DKE3HJQHFO2MK",
+                        "updatedAt":  "2024-10-02T15:38:24.634Z",
+                        "version":  "1727883504634",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Charcuterie",
+                                             "imageIds":  [
+                                                              "SGMM7J4NZKRS4L7G2JGVKE6V"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "1301374"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "Boar\u0027s Head Charcuterie",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "USXHCWJFMTN3EOYCNRSZHAPU",
+                        "updatedAt":  "2024-10-14T04:11:23.966Z",
+                        "version":  "1728879083966",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Coffee",
+                                             "imageIds":  [
+                                                              "I3ZEWQZR5LXIEIFGM2CKJCBG"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "300347"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "Messenger Coffee",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  "coffee"
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "XGEZ5U2F26OX4FZVHLEFABRZ",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Blue Bell Ice Cream",
+                                             "imageIds":  [
+                                                              "HXJHXNYZYO7L2IBBBRRT4FDT"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "1075676"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "JVITUNXI2W3X33XKKT62FY22",
+                        "updatedAt":  "2024-10-14T04:17:27.414Z",
+                        "version":  "1728879447414",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Pizza Subs",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "K4VUZIQWHQJWV4L6A4GJOAFE",
+                                                                    "ordinal":  "201364"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "K4VUZIQWHQJWV4L6A4GJOAFE",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "B5B2EIPCGDHNA7OGODACMMEV",
+                        "updatedAt":  "2024-12-03T18:45:11.027Z",
+                        "version":  "1733251511027",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Philly Cheesestakes",
+                                             "imageIds":  [
+                                                              "E72RCCIVAUJP3LUQYQSYGJ4S"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "7XAWOZWA4GYVCMYDQHUCXUBB",
+                                                                    "ordinal":  "-2251731094208512"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "7XAWOZWA4GYVCMYDQHUCXUBB",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "Best Philly Cheesesteaks",
+                                                                 "pageDescription":  "Thinly Sliced, Grilled \u0026 Seasoned Sirloin Steak \u0026 Melted Cheese on a Toasted Amoroso’s Hoagie.",
+                                                                 "permalink":  "PhillyCheesesteaks"
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "SVJR6C7XY2RRPVE44KSD2QB5",
+                        "updatedAt":  "2024-10-02T15:38:06.953Z",
+                        "version":  "1727883486953",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Breakfast Tacos",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "6GLDDC2YLFD2LWYJZIYJMEVU",
+                                                                    "ordinal":  "201843"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "6GLDDC2YLFD2LWYJZIYJMEVU"
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "47AAG6DY4JUFDVBPAQMAVHJB",
+                        "updatedAt":  "2024-10-14T03:54:05.949Z",
+                        "version":  "1728878045949",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Breakfast Burritos \u0026 Bowls",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "6GLDDC2YLFD2LWYJZIYJMEVU",
+                                                                    "ordinal":  "-34359536525"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "6GLDDC2YLFD2LWYJZIYJMEVU",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "J4YEJ7F7O3CEPHPO3DUHUCIK",
+                        "updatedAt":  "2024-10-14T03:54:02.001Z",
+                        "version":  "1728878042001",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Breakfast Sandwiches",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "6GLDDC2YLFD2LWYJZIYJMEVU",
+                                                                    "ordinal":  "-68719274893"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "6GLDDC2YLFD2LWYJZIYJMEVU",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "KDP2Y5HC4IHOZ6RHWHKBIRLL",
+                        "updatedAt":  "2025-02-05T17:22:13.905Z",
+                        "version":  "1738776133905",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Coffee Syrups \u0026 Sauces",
+                                             "imageIds":  [
+                                                              "FBXB6V476KFTSPDTSR4XYF3J"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "USXHCWJFMTN3EOYCNRSZHAPU",
+                                                                    "ordinal":  "101684"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "USXHCWJFMTN3EOYCNRSZHAPU",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "AE7IABYMCS7UNTGDZJVOGZBQ",
+                        "updatedAt":  "2024-10-02T15:38:40.255Z",
+                        "version":  "1727883520255",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Reuben Kits for Two Pre-Order",
+                                             "imageIds":  [
+                                                              "KQOCMIJPXN5NNEABEVCZBMEA"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "N4X3XJ6HSGAZ5J3JU6TTIL23",
+                                                                    "ordinal":  "101258"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "N4X3XJ6HSGAZ5J3JU6TTIL23",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "Reuben Kit for Two",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "ASCP4UBPXXIIIEI56ZSOYIPN",
+                        "updatedAt":  "2024-10-15T13:36:22.48Z",
+                        "version":  "1728999382480",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Bagels",
+                                             "imageIds":  [
+                                                              "MXD62X23WIWOVXFIGRJU7KXO"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "6GLDDC2YLFD2LWYJZIYJMEVU",
+                                                                    "ordinal":  "-103079013261"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "6GLDDC2YLFD2LWYJZIYJMEVU"
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "3TM4Q2I3N5RWG22KYE3IQCZR",
+                        "updatedAt":  "2024-10-14T03:57:07.935Z",
+                        "version":  "1728878227935",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Ala Carte",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "6GLDDC2YLFD2LWYJZIYJMEVU",
+                                                                    "ordinal":  "137439353830"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "6GLDDC2YLFD2LWYJZIYJMEVU",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "K2TJER3WAIGJTBBRTKLXVP3L",
+                        "updatedAt":  "2024-10-15T13:36:06.989Z",
+                        "version":  "1728999366989",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Pastries",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "6GLDDC2YLFD2LWYJZIYJMEVU",
+                                                                    "ordinal":  "-137438751629"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "6GLDDC2YLFD2LWYJZIYJMEVU",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "BZA5HBQEK463FZMENZPNR2MX",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Messenger 12oz Coffee Bags Whole Bean",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "USXHCWJFMTN3EOYCNRSZHAPU",
+                                                                    "ordinal":  "68719578420"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "USXHCWJFMTN3EOYCNRSZHAPU"
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "6CW4QDJTGN6A3354LS46LONI",
+                        "updatedAt":  "2024-10-14T04:26:23.878Z",
+                        "version":  "1728879983878",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Italian",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "KFDAI4KZSOA5EYCESZIIBV3W",
+                                                                    "ordinal":  "-2251731094208512"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "KFDAI4KZSOA5EYCESZIIBV3W",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "HN3DVWFWD7RMKSOSXUIZAMBU",
+                        "updatedAt":  "2024-10-14T04:27:08.346Z",
+                        "version":  "1728880028346",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Loaves",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "KFDAI4KZSOA5EYCESZIIBV3W",
+                                                                    "ordinal":  "-2251662374731776"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "KFDAI4KZSOA5EYCESZIIBV3W"
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "3GP5KIG4BO7SKAMNCYE5EQC5",
+                        "updatedAt":  "2024-10-14T04:30:25.869Z",
+                        "version":  "1728880225869",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Cheese",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "KFDAI4KZSOA5EYCESZIIBV3W",
+                                                                    "ordinal":  "-2251593655255040"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "KFDAI4KZSOA5EYCESZIIBV3W"
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "TLTRDHNZGVXPRUE33UGP4KLJ",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Energy Drinks",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                                                    "ordinal":  "-2251821288521728"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "RAH7LQ733RRIV5UHUBIEDIJM",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Pure Cane Sugar Sodas",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                                                    "ordinal":  "-2251937252638720"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "EBDSOGGFPXKLDKUMECJF4Y2A"
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "HIKI6KQHZ7EM7RXSDQMYOLYW",
+                        "updatedAt":  "2025-07-14T03:38:08.552Z",
+                        "version":  "1752464288552",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Water, Tea \u0026 Sports Drinks",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                                                    "ordinal":  "-2251859943227392"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "LF7OH6S7C4PCAYONRO6PQG45",
+                        "updatedAt":  "2025-07-12T13:40:44.515Z",
+                        "version":  "1752327644515",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Single Serve Chip Bags",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "Q4ONR3T4SGU4U7BFIISWCYSL",
+                                                                    "ordinal":  "-2251731094208512"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "Q4ONR3T4SGU4U7BFIISWCYSL",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "OVJ4JKQ7X53USVZKWH5JS3JA",
+                        "updatedAt":  "2025-07-23T22:25:01.273Z",
+                        "version":  "1753309501273",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Multi-Serve Bags",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "Q4ONR3T4SGU4U7BFIISWCYSL",
+                                                                    "ordinal":  "-2251524935778304"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "Q4ONR3T4SGU4U7BFIISWCYSL",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "EJ4J3HPQTHOBCDM5ADVZPYAC",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Pretzels",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "Q4ONR3T4SGU4U7BFIISWCYSL",
+                                                                    "ordinal":  "-2251662374731776"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "Q4ONR3T4SGU4U7BFIISWCYSL",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "ZH4P4GDIYFD3Z66ED6XZSBPY",
+                        "updatedAt":  "2024-10-17T02:14:05.909Z",
+                        "version":  "1729131245909",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Popcorn",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "Q4ONR3T4SGU4U7BFIISWCYSL",
+                                                                    "ordinal":  "-2251593655255040"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "Q4ONR3T4SGU4U7BFIISWCYSL",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "LF5IQSPSTTYAN25SFWGRA5GZ",
+                        "updatedAt":  "2024-10-17T02:28:03.528Z",
+                        "version":  "1729132083528",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Misc Snacks",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "Q4ONR3T4SGU4U7BFIISWCYSL",
+                                                                    "ordinal":  "-2251456216301568"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "Q4ONR3T4SGU4U7BFIISWCYSL",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "V7QHPIO3TNLMUGLSV32ETG3Y",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Sodas",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                                                    "ordinal":  "-2252005972115456"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "DVBLEOHF2CQ7L2DPVS3FXVBU",
+                        "updatedAt":  "2025-06-07T02:54:59.33Z",
+                        "version":  "1749264899330",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Better For You",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                                                    "ordinal":  "-2251782633816064"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "MAQVC5UEHYQ66BYSUQFPGSXI",
+                        "updatedAt":  "2025-07-14T00:15:11.897Z",
+                        "version":  "1752452111897",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Dairy",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                                                    "ordinal":  "-2251662374731776"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "Q4HOCOZVIXMGIGH7CVP4BJTC",
+                        "updatedAt":  "2025-06-23T18:49:18.354Z",
+                        "version":  "1750704558354",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Fruit Juices \u0026 Lemonades",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                                                    "ordinal":  "-2251696734470144"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "7ROCM4DEKXPLRURVP2GVM4EK",
+                        "updatedAt":  "2024-12-20T05:04:52.179Z",
+                        "version":  "1734671092179",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Reuben\u0027s \u0026 Hot Pastrami\u0027s",
+                                             "imageIds":  [
+                                                              "XOISFLALZXSJFU7WEVMBSNUN"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "151763"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "availabilityPeriodIds":  [
+                                                                           "3O5XE24HFWHWIUYGOYPHCU2Y",
+                                                                           "KGMF5ZTNVNI5IDCXDIYWHGFV",
+                                                                           "WEZZIX3TQYO4TORX2ZVJMCD2",
+                                                                           "QIJ55LYWHTIP7QPMSAOCNJVR",
+                                                                           "K4PEB2FMT35CWGUBB7GU4BM6",
+                                                                           "IZFTIF5ILL6VGAHFM5CD6366"
+                                                                       ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         },
+                        "availabilityPeriods":  [
+                                                    {
+                                                        "id":  "3O5XE24HFWHWIUYGOYPHCU2Y",
+                                                        "dayOfWeek":  "MON"
+                                                    },
+                                                    {
+                                                        "id":  "KGMF5ZTNVNI5IDCXDIYWHGFV",
+                                                        "dayOfWeek":  "TUE"
+                                                    },
+                                                    {
+                                                        "id":  "WEZZIX3TQYO4TORX2ZVJMCD2",
+                                                        "dayOfWeek":  "WED"
+                                                    },
+                                                    {
+                                                        "id":  "QIJ55LYWHTIP7QPMSAOCNJVR",
+                                                        "dayOfWeek":  "THU"
+                                                    },
+                                                    {
+                                                        "id":  "K4PEB2FMT35CWGUBB7GU4BM6",
+                                                        "dayOfWeek":  "FRI"
+                                                    },
+                                                    {
+                                                        "id":  "IZFTIF5ILL6VGAHFM5CD6366",
+                                                        "dayOfWeek":  "SAT"
+                                                    }
+                                                ]
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "7XAWOZWA4GYVCMYDQHUCXUBB",
+                        "updatedAt":  "2025-06-07T00:54:19.287Z",
+                        "version":  "1749257659287",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Philly Cheesesteaks",
+                                             "imageIds":  [
+                                                              "VXOMDI3CNLIQXEBGTQQNBBYL"
+                                                          ],
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "ordinal":  "126717"
+                                                                },
+                                             "isTopLevel":  true,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "ecomSeoData":  {
+                                                                 "pageTitle":  "",
+                                                                 "pageDescription":  "",
+                                                                 "permalink":  ""
+                                                             }
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "X2SQNDZB3JLLACDKW3VB4TP5",
+                        "updatedAt":  "2025-06-07T01:38:14.625Z",
+                        "version":  "1749260294625",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "050D853E-FDFC-4421-AA9B-FAE4D17A4B4A",
+                                                 "locationId":  "LFT2FXNSPTE5R"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Yogurt",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "LF5IQSPSTTYAN25SFWGRA5GZ",
+                                                                    "ordinal":  "-2251731094208512"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "Q4ONR3T4SGU4U7BFIISWCYSL"
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "H54WAS4XYS2AFW4VCW5XSYLA",
+                        "updatedAt":  "2025-06-15T02:36:48.342Z",
+                        "version":  "1749955008342",
+                        "isDeleted":  false,
+                        "catalogV1Ids":  [
+                                             {
+                                                 "catalogV1Id":  "3093F8CF-9992-4D0B-8F7F-42BCF06FB961",
+                                                 "locationId":  "LFT2FXNSPTE5R"
+                                             }
+                                         ],
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "ICEE Frozen Drinks",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                                                    "ordinal":  "-2251593655255040"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "EBDSOGGFPXKLDKUMECJF4Y2A"
+                                         }
+                    },
+                    {
+                        "type":  "CATEGORY",
+                        "id":  "3R6KX2TRKICTNK3SIFBS2TUD",
+                        "updatedAt":  "2025-06-23T17:34:35.393Z",
+                        "version":  "1750700075393",
+                        "isDeleted":  false,
+                        "presentAtAllLocations":  true,
+                        "categoryData":  {
+                                             "name":  "Protein Drinks",
+                                             "categoryType":  "REGULAR_CATEGORY",
+                                             "parentCategory":  {
+                                                                    "id":  "EBDSOGGFPXKLDKUMECJF4Y2A",
+                                                                    "ordinal":  "-2251524935778304"
+                                                                },
+                                             "isTopLevel":  false,
+                                             "channels":  [
+                                                              "CH_L6qd9TwQxv4I5qvCwxxZDx17w9MalFay3IufYRlQuYC"
+                                                          ],
+                                             "onlineVisibility":  true,
+                                             "rootCategory":  "EBDSOGGFPXKLDKUMECJF4Y2A"
+                                         }
+                    }
+                ],
+    "availabilityPeriods":  [
+                                {
+                                    "id":  "7WK6QLJZVERCCQXT7XCKTUOA",
+                                    "dayOfWeek":  "MON"
+                                },
+                                {
+                                    "id":  "7N5H7CJLMKRXSSSLDK6MFRSR",
+                                    "dayOfWeek":  "TUE"
+                                },
+                                {
+                                    "id":  "YQWL3CSJK3IZODXT47JMF64A",
+                                    "dayOfWeek":  "WED"
+                                },
+                                {
+                                    "id":  "KSJKLOCIAP7AAYOO7CM724IB",
+                                    "dayOfWeek":  "THU"
+                                },
+                                {
+                                    "id":  "6XJYX6OK763HPMUNP3TM7XY6",
+                                    "dayOfWeek":  "FRI"
+                                },
+                                {
+                                    "id":  "QH7KGOZPPLHRF6T3VMJ5ADDY",
+                                    "dayOfWeek":  "SAT"
+                                },
+                                {
+                                    "id":  "HPJKCWCV7WSTJDAMPJ2KDFUA",
+                                    "dayOfWeek":  "MON"
+                                },
+                                {
+                                    "id":  "L4R75YR4W7TUYSIQPKNIIOA3",
+                                    "dayOfWeek":  "TUE"
+                                },
+                                {
+                                    "id":  "22N7Y2GQADKFAXRG6JNFT226",
+                                    "dayOfWeek":  "WED"
+                                },
+                                {
+                                    "id":  "JTNHF7VTYLDEPN6LASBKVHAD",
+                                    "dayOfWeek":  "THU"
+                                },
+                                {
+                                    "id":  "MYWG3YIYLZ5RPDYVQU5TB4UB",
+                                    "dayOfWeek":  "FRI"
+                                },
+                                {
+                                    "id":  "C7D6O3PN3YZ4ZFB3I5KURYWT",
+                                    "dayOfWeek":  "SAT"
+                                },
+                                {
+                                    "id":  "NDDGKUITEN3BRRETE7M3UYRG",
+                                    "dayOfWeek":  "MON"
+                                },
+                                {
+                                    "id":  "WN3J6CNTSB6ECSEYRSTCEWWB",
+                                    "dayOfWeek":  "TUE"
+                                },
+                                {
+                                    "id":  "B5DVFK4OHR3BFPFSIMVCNUYR",
+                                    "dayOfWeek":  "WED"
+                                },
+                                {
+                                    "id":  "QBA7B6MXAB6ZKDQCYRP37HMN",
+                                    "dayOfWeek":  "THU"
+                                },
+                                {
+                                    "id":  "CT2HQKSIOSEPZUBC4NKGXNFR",
+                                    "dayOfWeek":  "FRI"
+                                },
+                                {
+                                    "id":  "UXEFCQGCOX5JSI45K25WEDVD",
+                                    "dayOfWeek":  "SAT"
+                                },
+                                {
+                                    "id":  "3O5XE24HFWHWIUYGOYPHCU2Y",
+                                    "dayOfWeek":  "MON"
+                                },
+                                {
+                                    "id":  "KGMF5ZTNVNI5IDCXDIYWHGFV",
+                                    "dayOfWeek":  "TUE"
+                                },
+                                {
+                                    "id":  "WEZZIX3TQYO4TORX2ZVJMCD2",
+                                    "dayOfWeek":  "WED"
+                                },
+                                {
+                                    "id":  "QIJ55LYWHTIP7QPMSAOCNJVR",
+                                    "dayOfWeek":  "THU"
+                                },
+                                {
+                                    "id":  "K4PEB2FMT35CWGUBB7GU4BM6",
+                                    "dayOfWeek":  "FRI"
+                                },
+                                {
+                                    "id":  "IZFTIF5ILL6VGAHFM5CD6366",
+                                    "dayOfWeek":  "SAT"
+                                },
+                                {
+                                    "id":  "FJ6G43SZQ6SJ5WMLXKQDI5HY",
+                                    "dayOfWeek":  "MON"
+                                },
+                                {
+                                    "id":  "CKOPEAM2SKQUKIDHU543IWTY",
+                                    "dayOfWeek":  "TUE"
+                                },
+                                {
+                                    "id":  "HYXF2RYSZBLXYIUKIKXJRU4P",
+                                    "dayOfWeek":  "WED"
+                                },
+                                {
+                                    "id":  "Q7ZE2ENO4K7YBGQFOY3RP22X",
+                                    "dayOfWeek":  "THU"
+                                },
+                                {
+                                    "id":  "EG43YC3HDM3LQSV2VHPUXZKN",
+                                    "dayOfWeek":  "FRI"
+                                },
+                                {
+                                    "id":  "ICUBIYVCQN2BN6HBRX4Z5ZXU",
+                                    "dayOfWeek":  "SAT"
+                                },
+                                {
+                                    "id":  "FCDIMFZI3W2XJ4NICC4D3ABX",
+                                    "dayOfWeek":  "SUN"
+                                },
+                                {
+                                    "id":  "JLPA5MXWXOS73NM6DULN7LVN",
+                                    "dayOfWeek":  "SUN"
+                                },
+                                {
+                                    "id":  "VUUMB43FDZM6AQB3JW4ISBBO",
+                                    "dayOfWeek":  "MON"
+                                },
+                                {
+                                    "id":  "UKLHCHW4KOHC3KB35D5ABBWC",
+                                    "dayOfWeek":  "TUE"
+                                },
+                                {
+                                    "id":  "MOQWU4EXMTH5S33X5NIBUUXQ",
+                                    "dayOfWeek":  "WED"
+                                },
+                                {
+                                    "id":  "LXVZOG7XGHB4QUA25YGGCDVZ",
+                                    "dayOfWeek":  "THU"
+                                },
+                                {
+                                    "id":  "TF7XQVGXQ5IXMM22PK6QO2R6",
+                                    "dayOfWeek":  "FRI"
+                                },
+                                {
+                                    "id":  "I4SPX4EK6CN5D7C2VPXFOID2",
+                                    "dayOfWeek":  "SAT"
+                                },
+                                {
+                                    "id":  "IGP5NIKBK47QY4UISCPW3HEF",
+                                    "dayOfWeek":  "SUN"
+                                }
+                            ]
+}

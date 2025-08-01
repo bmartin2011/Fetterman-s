@@ -1,4 +1,4 @@
-import { CartItem, StoreLocation, Product, Category, ProductVariant, ProductVariantOption, OrderStatus, Discount, AppliedDiscount, DiscountValidationResult, DiscountType, SquareMeasurementUnit, MeasurementUnit } from '../types';
+import { CartItem, StoreLocation, Product, Category, CategoryAvailabilityPeriod, ProductVariant, ProductVariantOption, OrderStatus, Discount, AppliedDiscount, DiscountValidationResult, DiscountType, SquareMeasurementUnit, MeasurementUnit } from '../types';
 import { apiCache, createCacheKey } from '../utils/cache';
 import { trackApiCall, trackError } from '../utils/performance';
 
@@ -28,7 +28,7 @@ interface SquareCard {
 interface TokenResult {
   status: 'OK' | 'INVALID_CARD' | 'VALIDATION_ERROR' | 'UNSUPPORTED_CARD_BRAND' | 'GENERIC_DECLINE';
   token?: string;
-  details?: any;
+  details?: Record<string, unknown>;
   errors?: Array<{ message: string; field?: string; type?: string }>;
 }
 
@@ -65,7 +65,7 @@ export class SquareService {
   constructor() {
     this.accessToken = process.env.REACT_APP_SQUARE_ACCESS_TOKEN || '';
     this.applicationId = process.env.REACT_APP_SQUARE_APPLICATION_ID || '';
-    this.locationId = process.env.REACT_APP_SQUARE_LOCATION_ID || '';
+    this.locationId = ''; // Will be fetched dynamically from Square API
     this.environment = process.env.REACT_APP_SQUARE_ENVIRONMENT || 'sandbox';
     // Use backend proxy instead of direct Square API calls
     const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
@@ -363,18 +363,21 @@ export class SquareService {
         ? `\n\n📅 PICKUP SCHEDULED:\n🗓️ Date: ${new Date(data.pickupDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n🕐 Time: ${this.formatTime(data.pickupTime)}\n📍 Location: ${data.pickupLocation.name}`
         : '';
 
+      // Ensure we have a valid location ID
+      const locationId = this.locationId || await this.getMainLocationId();
+      
       // Create Square order first
       let orderRequest = {
-        location_id: this.locationId || await this.getMainLocationId(),
+        location_id: locationId,
         order: {
-          location_id: this.locationId || await this.getMainLocationId(),
+          location_id: locationId,
           pricing_options: {
             auto_apply_taxes: true
           },
           line_items: data.items.map(item => {
-            let itemPrice = item.product.price;
+            // Build modifiers array for Square API using catalog object IDs
+            const modifiers: any[] = [];
             
-            // Add variant price modifiers
             if (item.selectedVariants && item.product.variants) {
               Object.entries(item.selectedVariants).forEach(([variantId, selectedValue]) => {
                 const variant = item.product.variants?.find(v => v.id === variantId);
@@ -382,25 +385,64 @@ export class SquareService {
                   if (Array.isArray(selectedValue)) {
                     selectedValue.forEach(value => {
                       const option = variant.options.find(opt => opt.name === value);
-                      if (option && option.price !== undefined) {
-                        itemPrice += option.price;
+                      if (option && option.price !== undefined && option.price > 0) {
+
+                        
+                        // Always include base_price_money to ensure proper pricing
+                        // According to Square API: base_price_money overrides catalog price when both are set
+                        const modifier: any = {
+                          base_price_money: {
+                            amount: Math.round(option.price * 100),
+                            currency: 'USD'
+                          },
+                          quantity: '1'
+                        };
+                        
+                        // Add catalog_object_id if available for better integration
+                        if (option.id) {
+                          modifier.catalog_object_id = option.id;
+
+                        } else {
+                          modifier.name = option.name;
+
+                        }
+                        
+                        modifiers.push(modifier);
                       }
                     });
                   } else {
                     const option = variant.options.find(opt => opt.name === selectedValue);
-                    if (option && option.price !== undefined) {
-                      itemPrice += option.price;
+                    if (option && option.price !== undefined && option.price > 0) {
+                      // Always include base_price_money to ensure proper pricing
+                      const modifier: any = {
+                        base_price_money: {
+                          amount: Math.round(option.price * 100),
+                          currency: 'USD'
+                        },
+                        quantity: '1'
+                      };
+                      
+                      // Add catalog_object_id if available for better integration
+                      if (option.id) {
+                        modifier.catalog_object_id = option.id;
+
+                      } else {
+                        modifier.name = option.name;
+
+                      }
+                      
+                      modifiers.push(modifier);
                     }
                   }
                 }
               });
             }
             
-            return {
+            const lineItem: any = {
               name: item.product.name,
               quantity: item.quantity.toString(),
               base_price_money: {
-                amount: Math.round(itemPrice * 100), // Convert to cents
+                amount: Math.round(item.product.price * 100), // Base price only, no modifiers
                 currency: 'USD'
               },
               variation_name: item.selectedVariants ? 
@@ -409,6 +451,13 @@ export class SquareService {
                 ).join(', ') : undefined,
               note: item.specialInstructions ? `${item.specialInstructions}${pickupInfo}` : pickupInfo || undefined
             };
+            
+            // Add modifiers array if there are any modifiers
+            if (modifiers.length > 0) {
+              lineItem.modifiers = modifiers;
+            }
+            
+            return lineItem;
           })
         }
       };
@@ -417,6 +466,8 @@ export class SquareService {
       if (data.appliedDiscounts && data.appliedDiscounts.length > 0) {
         orderRequest = this.applyDiscountsToOrder(orderRequest, data.appliedDiscounts);
       }
+
+
 
       // Create order in Square
       const orderResponse = await fetch(`${this.baseUrl}/orders`, {
@@ -970,6 +1021,15 @@ export class SquareService {
     }
   }
 
+  // Method to clear categories cache - useful when API structure changes
+  clearCategoriesCache(): void {
+    const cacheKey = createCacheKey('categories', this.locationId);
+    apiCache.delete(cacheKey);
+    if (process.env.NODE_ENV === 'development') {
+      // Categories cache cleared
+    }
+  }
+
   // Client-side location filtering using Square's built-in location fields
   private filterProductsByLocation(products: Product[], locationId?: string): Product[] {
     if (!locationId) {
@@ -1370,90 +1430,146 @@ export class SquareService {
    * Snacks (standalone - no subcategories)
    */
   async getCategories(): Promise<Category[]> {
-    const cacheKey = createCacheKey('categories');
-    
-    // Check cache first
-    const cachedCategories = apiCache.get(cacheKey) as Category[] | null;
-    if (cachedCategories) {
-      return cachedCategories;
-    }
-
     return trackApiCall(async () => {
-    try {
-
-      const response = await fetch(`${this.baseUrl}/categories`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+        const cacheKey = createCacheKey('categories', this.locationId);
+        const cached = apiCache.get(cacheKey);
+        // Temporarily disable cache to test POST request
+        if (cached) {
+          // Returning cached categories
+          return cached;
         }
-      });
+        
+        // Fetching categories from API
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Square API error: ${errorData.errors?.[0]?.detail || response.statusText}`);
-      }
+        const getResponse = await fetch(`${this.baseUrl}/categories`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
 
-      const data = await response.json();
+        if (!getResponse.ok) {
+          const errorData = await getResponse.json().catch(() => ({}));
+          console.error('❌ GET Response error:', errorData);
+          throw new Error(`Square API GET error: ${errorData.errors?.[0]?.detail || getResponse.statusText}`);
+        }
+
+        const data = await getResponse.json();
+        // Categories data received from backend
+      
       const flatCategories: Category[] = [];
+      
+      // Use availability periods provided by the backend (GET format)
+      const availabilityPeriodsMap: { [key: string]: any } = data.availabilityPeriods || {};
+      // Availability periods processed
 
+      // Step 3: Process categories with linked availability periods
       if (data.objects) {
         data.objects.forEach((category: any, index: number) => {
-          if (category.type === 'CATEGORY' && category.category_data) {
-            const categoryData = category.category_data;
-            // Check multiple possible parent category field names
-            // Square API uses 'root_category' for parent-child relationships
-            const parentCategoryId = categoryData.root_category || 
-                                   categoryData.parent_category || 
-                                   categoryData.parent_category_id || 
-                                   categoryData.parentCategoryId ||
+          if (category.type === 'CATEGORY' && category.categoryData?.name) {
+            
+            // Use isTopLevel to determine hierarchy - Square's recommended approach
+            const isTopLevel = category.categoryData.isTopLevel === true;
+            
+            // Check for parent category relationships
+            const parentCategoryId = category.categoryData.rootCategory || 
+                                   category.categoryData.parentCategory || 
+                                   category.categoryData.parentCategoryId ||
                                    undefined;
             
             // Don't set parentId if it's the same as the category's own ID (self-reference)
-            const actualParentId = (parentCategoryId && parentCategoryId !== category.id) ? parentCategoryId : undefined;
+            const actualParentId = !isTopLevel && parentCategoryId && parentCategoryId !== category.id ? parentCategoryId : undefined;
             
-            const finalParentId = actualParentId;
+            // Use availability periods directly from enhanced category (backend already mapped them)
+            const categoryAvailabilityPeriods = category.availabilityPeriods || [];
             
-
+            // Use online visibility from GET request (already filtered by backend)
+            const onlineVisibility = category.categoryData.onlineVisibility;
+            const isActive = onlineVisibility !== false && !category.isDeleted;
             
             flatCategories.push({
               id: category.id,
-              name: categoryData.name || 'Unnamed Category',
-              description: categoryData.description || '',
-              isActive: !category.is_deleted,
+              name: category.categoryData.name || 'Unnamed Category',
+              description: category.categoryData.description || '',
+              isActive: isActive,
               sortOrder: index + 1,
-              parentId: finalParentId,
-              level: finalParentId ? 1 : 0, // Will be recalculated
-              createdAt: category.created_at || new Date().toISOString(),
-              updatedAt: category.updated_at || new Date().toISOString()
+              parentId: actualParentId,
+              level: isTopLevel ? 0 : 1, // Top level categories are level 0
+              availabilityPeriods: categoryAvailabilityPeriods,
+              createdAt: category.createdAt || new Date().toISOString(),
+              updatedAt: category.updatedAt || new Date().toISOString()
             });
           }
         });
       }
 
-
-
-
-
       // Build hierarchical structure
       const hierarchicalCategories = this.buildCategoryHierarchy(flatCategories);
 
-
       // If no categories found, return empty array
       if (hierarchicalCategories.length === 0) {
-
+        return [];
       }
 
       // Cache the results
       apiCache.set(cacheKey, hierarchicalCategories, this.CACHE_TTL.categories);
       
+      // Categories processed successfully
       return hierarchicalCategories;
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        // Error fetching categories from Square
-      }
-      throw error;
-    }
     }, 'getCategories');
+  }
+
+  // Helper method to map availability periods from Square SDK response
+  private mapAvailabilityPeriods(periodIds: string[], availabilityPeriods: any): CategoryAvailabilityPeriod[] {
+    if (!periodIds || !Array.isArray(periodIds)) {
+      return [];
+    }
+
+    return periodIds
+      .map(periodId => {
+        const period = availabilityPeriods[periodId];
+        if (!period) {
+          return null;
+        }
+
+        // Handle both Square SDK structure (availabilityPeriodData) and REST API structure (availability_period_data)
+        const periodData = period.availabilityPeriodData || period.availability_period_data;
+        if (!periodData) {
+          return null;
+        }
+
+        return {
+          id: period.id,
+          startTime: periodData.startTime || periodData.start_time || '00:00:00',
+          endTime: periodData.endTime || periodData.end_time || '23:59:59',
+          dayOfWeek: periodData.dayOfWeek || periodData.day_of_week
+        };
+      })
+      .filter(period => period !== null) as CategoryAvailabilityPeriod[];
+  }
+
+  // New helper method specifically for API response structure
+  private mapAvailabilityPeriodsFromAPI(periodIds: string[], availabilityPeriods: any): CategoryAvailabilityPeriod[] {
+    if (!periodIds || !Array.isArray(periodIds)) {
+      return [];
+    }
+
+    return periodIds
+      .map(periodId => {
+        const period = availabilityPeriods[periodId];
+        if (!period) {
+          return null;
+        }
+
+        // Backend sends camelCase format: startTime, endTime, dayOfWeek
+        return {
+          id: period.id,
+          startTime: period.startTime || '00:00:00',
+          endTime: period.endTime || '23:59:59',
+          dayOfWeek: period.dayOfWeek
+        };
+      })
+      .filter(period => period !== null) as CategoryAvailabilityPeriod[];
   }
 
   // Helper method to build category hierarchy
@@ -1461,20 +1577,14 @@ export class SquareService {
     const categoryMap = new Map<string, Category>();
     const rootCategories: Category[] = [];
 
-
-
     // First pass: create map and identify root categories
     flatCategories.forEach(category => {
-      categoryMap.set(category.id, { ...category, subcategories: [] });
+      const categoryWithDefaults = { ...category, subcategories: [], level: 0 };
+      categoryMap.set(category.id, categoryWithDefaults);
       if (!category.parentId) {
-
         rootCategories.push(categoryMap.get(category.id)!);
-      } else {
-
       }
     });
-
-
 
     // Second pass: build parent-child relationships and calculate levels
     flatCategories.forEach(category => {
@@ -1487,9 +1597,6 @@ export class SquareService {
           }
           parent.subcategories.push(child);
           child.level = parent.level + 1;
-
-        } else {
-
         }
       }
     });

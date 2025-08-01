@@ -824,9 +824,11 @@ const CheckoutPage: React.FC = () => {
               {/* Order Items */}
               <div className="space-y-4 mb-6">
                 {items.map((item) => {
-                  let itemPrice = item.product.price;
+                  const basePrice = item.product.price;
+                  let addOnTotal = 0;
+                  const addOnDetails: Array<{name: string, price: number}> = [];
                   
-                  // Add variant price modifiers
+                  // Calculate add-on prices separately
                   if (item.selectedVariants && item.product.variants) {
                     Object.entries(item.selectedVariants).forEach(([variantId, selectedValue]) => {
                       const variant = item.product.variants?.find(v => v.id === variantId);
@@ -834,63 +836,116 @@ const CheckoutPage: React.FC = () => {
                         if (Array.isArray(selectedValue)) {
                           selectedValue.forEach(value => {
                             const option = variant.options.find(opt => opt.name === value);
-                            if (option && option.price !== undefined) {
-                              itemPrice += option.price;
+                            if (option && option.price !== undefined && option.price > 0) {
+                              addOnTotal += option.price;
+                              addOnDetails.push({name: option.name, price: option.price});
                             }
                           });
                         } else {
                           const option = variant.options.find(opt => opt.name === selectedValue);
-                          if (option && option.price !== undefined) {
-                            itemPrice += option.price;
+                          if (option && option.price !== undefined && option.price > 0) {
+                            addOnTotal += option.price;
+                            addOnDetails.push({name: option.name, price: option.price});
                           }
                         }
                       }
                     });
                   }
                   
+                  const itemPrice = basePrice + addOnTotal;
+                  
                   return (
-                    <div key={item.id} className="flex items-center space-x-4">
-                      <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-                        {item.product.images && item.product.images.length > 0 ? (
-                          <img
-                            src={item.product.images[0]}
-                            alt={item.product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <Package className="w-6 h-6" />
+                    <div key={item.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                      <div className="flex items-start space-x-4">
+                        <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                          {item.product.images && item.product.images.length > 0 ? (
+                            <img
+                              src={item.product.images[0]}
+                              alt={item.product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                              <Package className="w-6 h-6" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900">{item.product.name}</h3>
+                          
+                          {/* Price Breakdown */}
+                          <div className="mt-1 space-y-1">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Base price:</span>
+                              <span className="text-gray-900">${basePrice.toFixed(2)}</span>
+                            </div>
+                            
+                            {addOnDetails.map((addOn, index) => (
+                              <div key={index} className="flex justify-between text-sm">
+                                <span className="text-gray-600">+ {addOn.name}:</span>
+                                <span className="text-gray-900">${addOn.price.toFixed(2)}</span>
+                              </div>
+                            ))}
+                            
+                            {addOnTotal > 0 && (
+                              <div className="flex justify-between text-sm font-medium border-t border-gray-100 pt-1">
+                                <span className="text-gray-700">Item total:</span>
+                                <span className="text-gray-900">${itemPrice.toFixed(2)}</span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-900">{item.product.name}</h3>
-                        {item.selectedVariants && Object.entries(item.selectedVariants).map(([variantId, selectedValue]) => {
-                          const variant = item.product.variants?.find(v => v.id === variantId);
-                          if (!variant) return null;
                           
-                          const getOptionLabels = (value: string | string[]) => {
-                            if (Array.isArray(value)) {
-                              return value.map(val => {
-                                const option = variant.options.find(opt => opt.name === val);
-                                return option ? option.name : val;
-                              }).join(', ');
-                            } else {
-                              const option = variant.options.find(opt => opt.name === value);
-                              return option ? option.name : value;
-                            }
-                          };
+                          {/* Non-pricing variant options */}
+                          {item.selectedVariants && Object.entries(item.selectedVariants).map(([variantId, selectedValue]) => {
+                            const variant = item.product.variants?.find(v => v.id === variantId);
+                            if (!variant) return null;
+                            
+                            // Only show variants that don't have pricing (for display purposes)
+                            const hasNonPricingOptions = Array.isArray(selectedValue) 
+                              ? selectedValue.some(val => {
+                                  const option = variant.options.find(opt => opt.name === val);
+                                  return option && (option.price === undefined || option.price === 0);
+                                })
+                              : (() => {
+                                  const option = variant.options.find(opt => opt.name === selectedValue);
+                                  return option && (option.price === undefined || option.price === 0);
+                                })();
+                            
+                            if (!hasNonPricingOptions) return null;
+                            
+                            const getOptionLabels = (value: string | string[]) => {
+                              if (Array.isArray(value)) {
+                                return value.filter(val => {
+                                  const option = variant.options.find(opt => opt.name === val);
+                                  return option && (option.price === undefined || option.price === 0);
+                                }).join(', ');
+                              } else {
+                                const option = variant.options.find(opt => opt.name === value);
+                                return (option && (option.price === undefined || option.price === 0)) ? option.name : '';
+                              }
+                            };
+                            
+                            const labels = getOptionLabels(selectedValue);
+                            if (!labels) return null;
+                            
+                            return (
+                              <p key={variantId} className="text-sm text-gray-600 mt-1">
+                                {variant.name}: {labels}
+                              </p>
+                            );
+                          })}
                           
-                          return (
-                            <p key={variantId} className="text-sm text-gray-600">
-                              {variant.name}: {getOptionLabels(selectedValue)}
-                            </p>
-                          );
-                        })}
-                        <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium text-gray-900">${(itemPrice * item.quantity).toFixed(2)}</p>
+                          <p className="text-sm text-gray-600 mt-1">Quantity: {item.quantity}</p>
+                          {item.specialInstructions && (
+                            <p className="text-sm text-gray-600 mt-1 italic">Note: {item.specialInstructions}</p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium text-gray-900">${(itemPrice * item.quantity).toFixed(2)}</p>
+                          {item.quantity > 1 && (
+                            <p className="text-sm text-gray-500">${itemPrice.toFixed(2)} each</p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

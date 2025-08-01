@@ -23,4 +23,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Development and debug files
+server/debug_periods.js
+server/check_availability.js
+server/test_*.js
+server/category_hours_summary.js
+analyze_hidden_categories.js
+list_hidden_categories.js
+
 .vercel

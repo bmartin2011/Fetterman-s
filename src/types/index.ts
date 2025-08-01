@@ -9,13 +9,23 @@ export interface Category {
   name: string;
   description: string;
   isActive: boolean;
+  onlineVisibility?: boolean; // Square API: online visibility status
   sortOrder: number;
   parentId?: string; // Square API: parent_category field - links to parent category ID
   subcategories?: Category[]; // Child categories - populated during hierarchy building
   level: number; // 0 for parent categories (shown in nav), 1+ for subcategories (shown in dropdowns)
+  availabilityPeriods?: CategoryAvailabilityPeriod[]; // Category-specific availability hours
 
   createdAt: string;
   updatedAt: string;
+}
+
+// Category availability period interface
+export interface CategoryAvailabilityPeriod {
+  id: string;
+  startTime: string; // Format: "HH:MM:SS" (e.g., "07:00:00")
+  endTime: string;   // Format: "HH:MM:SS" (e.g., "10:30:00")
+  dayOfWeek?: string; // Optional: specific day restriction
 }
 
 
