@@ -61,13 +61,13 @@ const StoreStatusModal: React.FC<StoreStatusModalProps> = ({ isOpen, onClose }) 
             <div className="flex items-center justify-center">
               <Mail className="w-4 h-4 text-emerald-600 mr-2" />
               <span className="text-gray-700">
-                Email: fettermanscreekside@gmail.com
+                Creekside: 816-503-6757
               </span>
             </div>
             <div className="flex items-center justify-center">
               <Mail className="w-4 h-4 text-emerald-600 mr-2" />
               <span className="text-gray-700">
-                Email: fettermansplattecity@gmail.com
+                Platte City: 816-431-6266
               </span>
             </div>
           </div>
