@@ -63,7 +63,15 @@ const ProductsPage: React.FC = () => {
       'WEDNESDAY': 'Wed',
       'THURSDAY': 'Thu',
       'FRIDAY': 'Fri',
-      'SATURDAY': 'Sat'
+      'SATURDAY': 'Sat',
+      // Support abbreviated day names from Square API
+      'SUN': 'Sun',
+      'MON': 'Mon',
+      'TUE': 'Tue',
+      'WED': 'Wed',
+      'THU': 'Thu',
+      'FRI': 'Fri',
+      'SAT': 'Sat'
     };
 
     const formatTime = (timeStr: string): string => {

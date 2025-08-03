@@ -178,16 +178,6 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
                           <Phone className="w-4 h-4 flex-shrink-0" />
                           <span className="text-sm font-medium">{location.phone}</span>
                         </div>
-                        
-                        <div className="flex items-center gap-2 text-green-800">
-                          <Mail className="w-4 h-4 flex-shrink-0" />
-                          <span className="text-sm font-medium truncate">
-                            {location.name.toLowerCase().includes('creekside') 
-                              ? 'fettermanscreekside@gmail.com'
-                              : 'fettermansplattecity@gmail.com'
-                            }
-                          </span>
-                        </div>
                       </div>
                       
                       {/* Features */}

@@ -776,7 +776,7 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
                 if (option && option.price !== undefined && option.price > 0) {
                   addOnTotal += option.price;
                   modifiers.push({
-                    name: `${variant.name}: ${option.name}`,
+                    name: option.name,
                     base_price_money: {
                       amount: Math.round(option.price * 100),
                       currency: 'USD'
@@ -789,7 +789,7 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
               if (option && option.price !== undefined && option.price > 0) {
                 addOnTotal += option.price;
                 modifiers.push({
-                  name: `${variant.name}: ${option.name}`,
+                  name: option.name,
                   base_price_money: {
                     amount: Math.round(option.price * 100),
                     currency: 'USD'
@@ -820,14 +820,14 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
         lineItem.modifiers = modifiers;
       }
       
-      // Add special instructions as note
+      // Add special instructions as note (keeping only essential information)
       if (item.specialInstructions) {
         lineItem.note = item.specialInstructions;
       }
       
-      // Add variation details for non-pricing options
+      // Add variation values only (without questions) for non-pricing options
       if (item.selectedVariants && item.product?.variants) {
-        const nonPricingVariations = [];
+        const variationValues = [];
         Object.entries(item.selectedVariants).forEach(([variantId, selectedValue]) => {
           const variant = item.product.variants?.find(v => v.id === variantId);
           if (variant) {
@@ -835,21 +835,21 @@ app.post('/api/square/create-checkout', checkStoreOnline, async (req, res) => {
               selectedValue.forEach(value => {
                 const option = variant.options.find(opt => opt.name === value);
                 if (option && (option.price === undefined || option.price === 0)) {
-                  nonPricingVariations.push(`${variant.name}: ${option.name}`);
+                  variationValues.push(option.name); // Only the answer, not the question
                 }
               });
             } else {
               const option = variant.options.find(opt => opt.name === selectedValue);
               if (option && (option.price === undefined || option.price === 0)) {
-                nonPricingVariations.push(`${variant.name}: ${option.name}`);
+                variationValues.push(option.name); // Only the answer, not the question
               }
             }
           }
         });
         
-        if (nonPricingVariations.length > 0) {
+        if (variationValues.length > 0) {
           const existingNote = lineItem.note || '';
-          lineItem.note = existingNote ? `${existingNote} | ${nonPricingVariations.join(', ')}` : nonPricingVariations.join(', ');
+          lineItem.note = existingNote ? `${existingNote} | ${variationValues.join(', ')}` : variationValues.join(', ');
         }
       }
       

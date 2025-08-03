@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Clock, Mail } from 'lucide-react';
+import { AlertTriangle, Clock, Phone } from 'lucide-react';
 
 interface StoreStatusModalProps {
   isOpen: boolean;
@@ -59,15 +59,15 @@ const StoreStatusModal: React.FC<StoreStatusModalProps> = ({ isOpen, onClose }) 
           <h3 className="font-semibold text-gray-900 mb-3 text-center">Need to place an order?</h3>
           <div className="space-y-2">
             <div className="flex items-center justify-center">
-              <Mail className="w-4 h-4 text-emerald-600 mr-2" />
+              <Phone className="w-4 h-4 text-emerald-600 mr-2" />
               <span className="text-gray-700">
-                Creekside: 816-503-6757
+                Creekside: (816)-503-6757
               </span>
             </div>
             <div className="flex items-center justify-center">
-              <Mail className="w-4 h-4 text-emerald-600 mr-2" />
+              <Phone className="w-4 h-4 text-emerald-600 mr-2" />
               <span className="text-gray-700">
-                Platte City: 816-431-6266
+                Platte City: (816)-431-6266
               </span>
             </div>
           </div>

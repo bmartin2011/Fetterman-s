@@ -930,7 +930,7 @@ const CheckoutPage: React.FC = () => {
                             
                             return (
                               <p key={variantId} className="text-sm text-gray-600 mt-1">
-                                {variant.name}: {labels}
+                                {labels}
                               </p>
                             );
                           })}

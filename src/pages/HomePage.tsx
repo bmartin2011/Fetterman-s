@@ -509,16 +509,7 @@ const HomePage: React.FC = () => {
                             {formatPhoneForDisplay(location.phone)}
                           </a>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <Mail className="w-6 h-6 text-emerald-300" aria-hidden="true" />
-                          <a 
-                            href={`mailto:${location.name.toLowerCase().includes('creekside') ? 'fettermanscreekside@gmail.com' : 'fettermansplattecity@gmail.com'}`}
-                            className="text-white hover:text-emerald-200 transition-colors text-base font-medium btn-focus underline-offset-4 hover:underline"
-                            aria-label={`Send email to ${location.name} location`}
-                          >
-                            {location.name.toLowerCase().includes('creekside') ? 'fettermanscreekside@gmail.com' : 'fettermansplattecity@gmail.com'}
-                          </a>
-                        </div>
+
                         <div className="flex items-start gap-4">
                           <Clock className="w-6 h-6 text-emerald-300 mt-1" aria-hidden="true" />
                           <div className="text-emerald-100">

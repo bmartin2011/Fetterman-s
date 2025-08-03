@@ -129,27 +129,27 @@ const CartPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Shopping Cart</h1>
             <p className="text-gray-600 mt-1">{items.length} item(s) in your cart</p>
           </div>
           <button
             onClick={handleClearCart}
-            className="text-red-600 hover:text-red-700 transition-colors text-sm font-medium"
+            className="text-red-600 hover:text-red-700 transition-colors text-sm font-medium self-start sm:self-auto"
           >
             Clear Cart
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
-              <div key={item.id} className="bg-white rounded-lg shadow-sm border p-6">
-                <div className="flex items-center space-x-4">
+              <div key={item.id} className="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
                   {/* Product Image */}
-                  <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
+                  <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden mx-auto sm:mx-0">
                     {item.product.images && item.product.images.length > 0 ? (
                       <img
                         src={item.product.images[0]}
@@ -164,8 +164,8 @@ const CartPage: React.FC = () => {
                   </div>
 
                   {/* Product Info */}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-lg font-medium text-gray-900 truncate">
+                  <div className="flex-1 min-w-0 text-center sm:text-left">
+                    <h4 className="text-base sm:text-lg font-medium text-gray-900 truncate">
                       {item.product.name}
                     </h4>
                     
@@ -190,7 +190,7 @@ const CartPage: React.FC = () => {
                           
                           return (
                             <p key={variantId} className="text-sm text-gray-600">
-                              <span className="font-medium">{variant.name}:</span> {getOptionLabels(selectedValue)}
+                              {getOptionLabels(selectedValue)}
                             </p>
                           );
                         })}
@@ -206,13 +206,13 @@ const CartPage: React.FC = () => {
                       </div>
                     )}
                     
-                    <p className="text-lg font-bold text-gray-900 mt-2">
+                    <p className="text-base sm:text-lg font-bold text-gray-900 mt-2">
                       ${(item.totalPrice / item.quantity).toFixed(2)}
                     </p>
                   </div>
 
                   {/* Quantity Controls */}
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center justify-center sm:justify-start space-x-3">
                     <div className="flex items-center border border-gray-300 rounded-lg">
                       <button
                         onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
@@ -247,7 +247,7 @@ const CartPage: React.FC = () => {
                 {/* Per Item Price */}
                 <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
                   <span className="text-sm text-gray-600">Per Item:</span>
-                  <span className="text-lg font-bold text-gray-900">
+                  <span className="text-base sm:text-lg font-bold text-gray-900">
                     ${(item.totalPrice / item.quantity).toFixed(2)}
                   </span>
                 </div>
@@ -257,12 +257,12 @@ const CartPage: React.FC = () => {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
+            <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 lg:sticky lg:top-8">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Order Summary</h2>
               
               {/* Pickup Location */}
-              <div className="mb-6 pb-6 border-b border-gray-200">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Pickup Location</h4>
+              <div className="mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-gray-200">
+                <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">Pickup Location</h4>
                 {selectedLocation ? (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                     <div className="flex items-start justify-between">
@@ -294,7 +294,7 @@ const CartPage: React.FC = () => {
 
               {/* Pickup Date & Time */}
               {selectedLocation && (
-                <div className="mb-6 pb-6 border-b border-gray-200">
+                <div className="mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-gray-200">
                   <DateTimePickerNew
                     selectedDate={selectedPickupDate || undefined}
                     selectedTime={selectedPickupTime || undefined}
@@ -323,7 +323,7 @@ const CartPage: React.FC = () => {
               <button
                 onClick={handleCheckout}
                 disabled={isLoading}
-                className="w-full mt-6 bg-green-700 text-white py-3 px-4 rounded-lg hover:bg-green-800 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-sm"
+                className="w-full mt-4 sm:mt-6 bg-green-700 text-white py-3 px-4 rounded-lg hover:bg-green-800 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-sm text-sm sm:text-base"
               >
                 {isLoading ? (
                   'Redirecting to Square...'
